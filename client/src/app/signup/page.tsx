@@ -4,6 +4,7 @@ import React, { useState } from 'react';
 import { Eye, EyeOff, BarChart3, Router } from 'lucide-react';
 import useAuthStore from '@/store/useAuthStore'; // 👈 import your zustand store
 import { useRouter } from 'next/navigation';
+import Link from 'next/link';
 
 type RegistrationFormKeys = keyof RegistrationFormErrors;
 
@@ -523,12 +524,12 @@ const RegistrationForm = () => {
           <div className='text-center pt-4 border-t border-slate-700/50'>
             <p className='text-slate-400'>
               Already have an account?{' '}
-              <a
-                href='#'
+              <Link
+                href='/signin'
                 className='text-cyan-400 hover:text-cyan-300 font-medium'
               >
                 Sign In
-              </a>
+              </Link>
             </p>
           </div>
         </div>
