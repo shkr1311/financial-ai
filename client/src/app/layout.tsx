@@ -1,34 +1,35 @@
-import type React from "react"
-import type { Metadata } from "next"
-import { Inter, Space_Grotesk } from "next/font/google"
-import "./globals.css"
+import type React from 'react';
+import type { Metadata } from 'next';
+import { Inter, Space_Grotesk } from 'next/font/google';
+import './globals.css';
+import { Toaster } from 'react-hot-toast';
 
 const inter = Inter({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-inter",
-})
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-inter',
+});
 
 const spaceGrotesk = Space_Grotesk({
-  subsets: ["latin"],
-  display: "swap",
-  variable: "--font-space-grotesk",
-})
+  subsets: ['latin'],
+  display: 'swap',
+  variable: '--font-space-grotesk',
+});
 
 export const metadata: Metadata = {
-  title: "FinanceAI - Smarter Trading. Clearer Insights.",
+  title: 'FinanceAI - Smarter Trading. Clearer Insights.',
   description:
-    "AI-powered financial intelligence platform with real-time market data, stock personality analysis, and essential trading tools in one sleek dark interface.",
-  generator: "v0.app",
-}
+    'AI-powered financial intelligence platform with real-time market data, stock personality analysis, and essential trading tools in one sleek dark interface.',
+  generator: 'v0.app',
+};
 
 export default function RootLayout({
   children,
 }: Readonly<{
-  children: React.ReactNode
+  children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="dark">
+    <html lang='en' className='dark'>
       <head>
         <style>{`
 html {
@@ -38,7 +39,12 @@ html {
 }
         `}</style>
       </head>
-      <body className={`${inter.variable} ${spaceGrotesk.variable} antialiased`}>{children}</body>
+      <body
+        className={`${inter.variable} ${spaceGrotesk.variable} antialiased`}
+      >
+        {children}
+        <Toaster position='bottom-right' />
+      </body>
     </html>
-  )
+  );
 }

@@ -1,7 +1,9 @@
-'use client'
+'use client';
 
 import React, { useState } from 'react';
-import { Eye, EyeOff, BarChart3 } from 'lucide-react';
+import { Eye, EyeOff, BarChart3, Router } from 'lucide-react';
+import useAuthStore from '@/store/useAuthStore'; // 👈 import your zustand store
+import { useRouter } from 'next/navigation';
 
 type RegistrationFormKeys = keyof RegistrationFormErrors;
 
@@ -25,6 +27,7 @@ export interface RegistrationFormErrors {
 }
 
 const RegistrationForm = () => {
+  const router = useRouter();
   const [formData, setFormData] = useState({
     fullName: '',
     email: '',
@@ -40,13 +43,16 @@ const RegistrationForm = () => {
     state: '',
     pincode: '',
     occupation: '',
-    income: '',
+    income: 0,
     termsAccepted: false,
   });
 
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const [errors, setErrors] = useState<RegistrationFormErrors>({});
+
+  // ✅ get signUp + loading from zustand
+  const { signUp, loading } = useAuthStore();
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -113,10 +119,18 @@ const RegistrationForm = () => {
     return Object.keys(newErrors).length === 0;
   };
 
-  const handleSubmit = () => {
-    if (validateForm()) {
-      console.log('Registration Data:', formData);
-      alert('Registration successful! (Check console for data)');
+  const handleSubmit = async () => {
+    if (!validateForm()) return;
+
+    // ✅ call zustand signUp
+    const result = await signUp(formData);
+
+    if (result.success) {
+      // navigate or show message
+      console.log('User registered:', result);
+      router.push('/');
+    } else {
+      console.error('Signup failed:', result.error);
     }
   };
 
@@ -141,13 +155,18 @@ const RegistrationForm = () => {
           <p className='text-slate-400'>Join thousands of smart investors</p>
         </div>
 
+        {/* form content stays the same ... */}
         <div className='space-y-6'>
-          {/* Personal Information */}
+          {' '}
+          {/* Personal Information */}{' '}
           <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+            {' '}
             <div>
+              {' '}
               <label className='block text-slate-300 text-sm font-medium mb-2'>
-                Full Name *
-              </label>
+                {' '}
+                Full Name *{' '}
+              </label>{' '}
               <input
                 type='text'
                 name='fullName'
@@ -155,37 +174,41 @@ const RegistrationForm = () => {
                 onChange={handleChange}
                 placeholder='Enter your full name'
                 className={inputClass}
-              />
+              />{' '}
               {errors.fullName && (
                 <p className={errorClass}>{errors.fullName}</p>
-              )}
-            </div>
-
+              )}{' '}
+            </div>{' '}
             <div>
+              {' '}
               <label className='block text-slate-300 text-sm font-medium mb-2'>
-                Gender *
-              </label>
+                {' '}
+                Gender *{' '}
+              </label>{' '}
               <select
                 name='gender'
                 value={formData.gender}
                 onChange={handleChange}
                 className={inputClass}
               >
-                <option value=''>Select Gender</option>
-                <option value='male'>Male</option>
-                <option value='female'>Female</option>
-                <option value='other'>Other</option>
-              </select>
-              {errors.gender && <p className={errorClass}>{errors.gender}</p>}
-            </div>
-          </div>
-
-          {/* Contact Information */}
+                {' '}
+                <option value=''>Select Gender</option>{' '}
+                <option value='male'>Male</option>{' '}
+                <option value='female'>Female</option>{' '}
+                <option value='other'>Other</option>{' '}
+              </select>{' '}
+              {errors.gender && <p className={errorClass}>{errors.gender}</p>}{' '}
+            </div>{' '}
+          </div>{' '}
+          {/* Contact Information */}{' '}
           <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+            {' '}
             <div>
+              {' '}
               <label className='block text-slate-300 text-sm font-medium mb-2'>
-                Email Address *
-              </label>
+                {' '}
+                Email Address *{' '}
+              </label>{' '}
               <input
                 type='email'
                 name='email'
@@ -193,14 +216,15 @@ const RegistrationForm = () => {
                 onChange={handleChange}
                 placeholder='Enter your email'
                 className={inputClass}
-              />
-              {errors.email && <p className={errorClass}>{errors.email}</p>}
-            </div>
-
+              />{' '}
+              {errors.email && <p className={errorClass}>{errors.email}</p>}{' '}
+            </div>{' '}
             <div>
+              {' '}
               <label className='block text-slate-300 text-sm font-medium mb-2'>
-                Mobile Number *
-              </label>
+                {' '}
+                Mobile Number *{' '}
+              </label>{' '}
               <input
                 type='tel'
                 name='mobile'
@@ -209,32 +233,35 @@ const RegistrationForm = () => {
                 placeholder='10-digit mobile number'
                 maxLength={10}
                 className={inputClass}
-              />
-              {errors.mobile && <p className={errorClass}>{errors.mobile}</p>}
-            </div>
-          </div>
-
-          {/* Date of Birth */}
+              />{' '}
+              {errors.mobile && <p className={errorClass}>{errors.mobile}</p>}{' '}
+            </div>{' '}
+          </div>{' '}
+          {/* Date of Birth */}{' '}
           <div>
+            {' '}
             <label className='block text-slate-300 text-sm font-medium mb-2'>
-              Date of Birth * (Must be 18+)
-            </label>
+              {' '}
+              Date of Birth * (Must be 18+){' '}
+            </label>{' '}
             <input
               type='date'
               name='dob'
               value={formData.dob}
               onChange={handleChange}
               className={inputClass}
-            />
-            {errors.dob && <p className={errorClass}>{errors.dob}</p>}
-          </div>
-
-          {/* Financial Information */}
+            />{' '}
+            {errors.dob && <p className={errorClass}>{errors.dob}</p>}{' '}
+          </div>{' '}
+          {/* Financial Information */}{' '}
           <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+            {' '}
             <div>
+              {' '}
               <label className='block text-slate-300 text-sm font-medium mb-2'>
-                PAN Number *
-              </label>
+                {' '}
+                PAN Number *{' '}
+              </label>{' '}
               <input
                 type='text'
                 name='pan'
@@ -243,14 +270,15 @@ const RegistrationForm = () => {
                 placeholder='ABCDE1234F'
                 maxLength={10}
                 className={inputClass}
-              />
-              {errors.pan && <p className={errorClass}>{errors.pan}</p>}
-            </div>
-
+              />{' '}
+              {errors.pan && <p className={errorClass}>{errors.pan}</p>}{' '}
+            </div>{' '}
             <div>
+              {' '}
               <label className='block text-slate-300 text-sm font-medium mb-2'>
-                Aadhaar Number (Optional)
-              </label>
+                {' '}
+                Aadhaar Number (Optional){' '}
+              </label>{' '}
               <input
                 type='text'
                 name='aadhaar'
@@ -259,15 +287,16 @@ const RegistrationForm = () => {
                 placeholder='12-digit Aadhaar number'
                 maxLength={12}
                 className={inputClass}
-              />
-            </div>
-          </div>
-
-          {/* Address */}
+              />{' '}
+            </div>{' '}
+          </div>{' '}
+          {/* Address */}{' '}
           <div>
+            {' '}
             <label className='block text-slate-300 text-sm font-medium mb-2'>
-              Residential Address *
-            </label>
+              {' '}
+              Residential Address *{' '}
+            </label>{' '}
             <textarea
               name='address'
               value={formData.address}
@@ -275,15 +304,17 @@ const RegistrationForm = () => {
               placeholder='Enter your complete address'
               rows={3}
               className={inputClass}
-            />
-            {errors.address && <p className={errorClass}>{errors.address}</p>}
-          </div>
-
+            />{' '}
+            {errors.address && <p className={errorClass}>{errors.address}</p>}{' '}
+          </div>{' '}
           <div className='grid grid-cols-1 md:grid-cols-3 gap-4'>
+            {' '}
             <div>
+              {' '}
               <label className='block text-slate-300 text-sm font-medium mb-2'>
-                City *
-              </label>
+                {' '}
+                City *{' '}
+              </label>{' '}
               <input
                 type='text'
                 name='city'
@@ -291,14 +322,15 @@ const RegistrationForm = () => {
                 onChange={handleChange}
                 placeholder='City'
                 className={inputClass}
-              />
-              {errors.city && <p className={errorClass}>{errors.city}</p>}
-            </div>
-
+              />{' '}
+              {errors.city && <p className={errorClass}>{errors.city}</p>}{' '}
+            </div>{' '}
             <div>
+              {' '}
               <label className='block text-slate-300 text-sm font-medium mb-2'>
-                State *
-              </label>
+                {' '}
+                State *{' '}
+              </label>{' '}
               <input
                 type='text'
                 name='state'
@@ -306,14 +338,15 @@ const RegistrationForm = () => {
                 onChange={handleChange}
                 placeholder='State'
                 className={inputClass}
-              />
-              {errors.state && <p className={errorClass}>{errors.state}</p>}
-            </div>
-
+              />{' '}
+              {errors.state && <p className={errorClass}>{errors.state}</p>}{' '}
+            </div>{' '}
             <div>
+              {' '}
               <label className='block text-slate-300 text-sm font-medium mb-2'>
-                Pincode *
-              </label>
+                {' '}
+                Pincode *{' '}
+              </label>{' '}
               <input
                 type='text'
                 name='pincode'
@@ -322,17 +355,19 @@ const RegistrationForm = () => {
                 placeholder='6-digit pincode'
                 maxLength={6}
                 className={inputClass}
-              />
-              {errors.pincode && <p className={errorClass}>{errors.pincode}</p>}
-            </div>
-          </div>
-
-          {/* Optional Fields */}
+              />{' '}
+              {errors.pincode && <p className={errorClass}>{errors.pincode}</p>}{' '}
+            </div>{' '}
+          </div>{' '}
+          {/* Optional Fields */}{' '}
           <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+            {' '}
             <div>
+              {' '}
               <label className='block text-slate-300 text-sm font-medium mb-2'>
-                Occupation (Optional)
-              </label>
+                {' '}
+                Occupation (Optional){' '}
+              </label>{' '}
               <input
                 type='text'
                 name='occupation'
@@ -340,36 +375,55 @@ const RegistrationForm = () => {
                 onChange={handleChange}
                 placeholder='Your occupation'
                 className={inputClass}
-              />
-            </div>
-
+              />{' '}
+            </div>{' '}
             <div>
-              <label className='block text-slate-300 text-sm font-medium mb-2'>
-                Annual Income (Optional)
-              </label>
+              {' '}
+              {/* <label className='block text-slate-300 text-sm font-medium mb-2'>
+                {' '}
+                Annual Income (Optional){' '}
+              </label>{' '}
               <select
                 name='income'
                 value={formData.income}
                 onChange={handleChange}
                 className={inputClass}
               >
-                <option value=''>Select Income Range</option>
-                <option value='below-2'>Below ₹2 Lakh</option>
-                <option value='2-5'>₹2-5 Lakh</option>
-                <option value='5-10'>₹5-10 Lakh</option>
-                <option value='10-25'>₹10-25 Lakh</option>
-                <option value='above-25'>Above ₹25 Lakh</option>
-              </select>
-            </div>
-          </div>
-
-          {/* Password */}
-          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
-            <div>
-              <label className='block text-slate-300 text-sm font-medium mb-2'>
-                Password *
+                {' '}
+                <option value=''>Select Income Range</option>{' '}
+                <option value='below-2'>Below ₹2 Lakh</option>{' '}
+                <option value='2-5'>₹2-5 Lakh</option>{' '}
+                <option value='5-10'>₹5-10 Lakh</option>{' '}
+                <option value='10-25'>₹10-25 Lakh</option>{' '}
+                <option value='above-25'>Above ₹25 Lakh</option>{' '}
+              </select>{' '} */}
+              <label className="block text-slate-300 text-sm font-medium mb-2">
+                Annual Income (Optional)
               </label>
+              <input
+                type="number"
+                name="income"
+                value={formData.income}
+                onChange={(e) =>
+                  setFormData({ ...formData, income: Number(e.target.value) })
+                }
+                className={inputClass}
+                placeholder="Enter your annual income"
+              />
+
+            </div>{' '}
+          </div>{' '}
+          {/* Password */}{' '}
+          <div className='grid grid-cols-1 md:grid-cols-2 gap-4'>
+            {' '}
+            <div>
+              {' '}
+              <label className='block text-slate-300 text-sm font-medium mb-2'>
+                {' '}
+                Password *{' '}
+              </label>{' '}
               <div className='relative'>
+                {' '}
                 <input
                   type={showPassword ? 'text' : 'password'}
                   name='password'
@@ -377,25 +431,28 @@ const RegistrationForm = () => {
                   onChange={handleChange}
                   placeholder='Create a strong password'
                   className={inputClass + ' pr-12'}
-                />
+                />{' '}
                 <button
                   type='button'
                   onClick={() => setShowPassword(!showPassword)}
                   className='absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-300'
                 >
-                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}
-                </button>
-              </div>
+                  {' '}
+                  {showPassword ? <EyeOff size={18} /> : <Eye size={18} />}{' '}
+                </button>{' '}
+              </div>{' '}
               {errors.password && (
                 <p className={errorClass}>{errors.password}</p>
-              )}
-            </div>
-
+              )}{' '}
+            </div>{' '}
             <div>
+              {' '}
               <label className='block text-slate-300 text-sm font-medium mb-2'>
-                Confirm Password *
-              </label>
+                {' '}
+                Confirm Password *{' '}
+              </label>{' '}
               <div className='relative'>
+                {' '}
                 <input
                   type={showConfirmPassword ? 'text' : 'password'}
                   name='confirmPassword'
@@ -403,62 +460,65 @@ const RegistrationForm = () => {
                   onChange={handleChange}
                   placeholder='Confirm your password'
                   className={inputClass + ' pr-12'}
-                />
+                />{' '}
                 <button
                   type='button'
                   onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                   className='absolute right-3 top-1/2 transform -translate-y-1/2 text-slate-400 hover:text-slate-300'
                 >
+                  {' '}
                   {showConfirmPassword ? (
                     <EyeOff size={18} />
                   ) : (
                     <Eye size={18} />
-                  )}
-                </button>
-              </div>
+                  )}{' '}
+                </button>{' '}
+              </div>{' '}
               {errors.confirmPassword && (
                 <p className={errorClass}>{errors.confirmPassword}</p>
-              )}
-            </div>
-          </div>
-
-          {/* Terms and Conditions */}
+              )}{' '}
+            </div>{' '}
+          </div>{' '}
+          {/* Terms and Conditions */}{' '}
           <div className='flex items-start space-x-3'>
+            {' '}
             <input
               type='checkbox'
               name='termsAccepted'
               checked={formData.termsAccepted}
               onChange={handleChange}
               className='mt-1 w-4 h-4 text-cyan-400 bg-slate-700 border-slate-600 rounded focus:ring-cyan-400 focus:ring-2'
-            />
+            />{' '}
             <label className='text-slate-300 text-sm leading-relaxed'>
+              {' '}
               I agree to the{' '}
               <a
                 href='#'
                 className='text-cyan-400 hover:text-cyan-300 underline'
               >
-                Terms & Conditions
+                {' '}
+                Terms & Conditions{' '}
               </a>{' '}
               and{' '}
               <a
                 href='#'
                 className='text-cyan-400 hover:text-cyan-300 underline'
               >
-                Privacy Policy
-              </a>
-            </label>
-          </div>
+                {' '}
+                Privacy Policy{' '}
+              </a>{' '}
+            </label>{' '}
+          </div>{' '}
           {errors.terms && <p className={errorClass}>{errors.terms}</p>}
-
           {/* Submit Button */}
           <button
             type='button'
             onClick={handleSubmit}
-            className='w-full bg-cyan-400 hover:bg-cyan-300 text-slate-900 font-semibold py-3 px-6 rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl'
+            disabled={loading}
+            className='w-full bg-cyan-400 hover:bg-cyan-300 text-slate-900 font-semibold py-3 px-6 rounded-lg transition-colors duration-200 shadow-lg hover:shadow-xl disabled:opacity-50'
           >
-            Create Account
+            {loading ? 'Creating Account...' : 'Create Account'}
           </button>
-
           {/* Login Link */}
           <div className='text-center pt-4 border-t border-slate-700/50'>
             <p className='text-slate-400'>

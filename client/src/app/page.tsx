@@ -16,6 +16,7 @@ import {
   Menu,
   X,
 } from 'lucide-react';
+import useAuthStore from '../store/useAuthStore';
 
 const features = [
   {
@@ -92,6 +93,14 @@ export default function Page() {
   const [currentTickerIndex, setCurrentTickerIndex] = useState(0);
   const [menuOpen, setMenuOpen] = useState(false);
 
+  // ✅ get auth state from store
+  const { authUser, isAuthenticated, checkAuth, isCheckingAuth, logout } =
+    useAuthStore();
+
+  useEffect(() => {
+    checkAuth(); // ✅ check auth on mount
+  }, [checkAuth]);
+
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentTickerIndex((prev) => (prev + 1) % tickerData.length);
@@ -101,19 +110,9 @@ export default function Page() {
 
   const handleFeatureClick = (feature: (typeof features)[0]) => {
     if (feature.available) {
-      if (
-        feature.href === '/market-dashboard' ||
-        feature.href === '/stock-personality' ||
-        feature.href === '/company-financials' ||
-        feature.href === '/news-sentiment' ||
-        feature.href === '/pattern-detection' ||
-        feature.href === '/risk-meter' ||
-        feature.href === '/community'
-      ) {
-        window.location.href = feature.href;
-      } else {
-        scrollToSection('features');
-      }
+      window.location.href = feature.href;
+    } else {
+      scrollToSection('features');
     }
   };
 
@@ -147,12 +146,29 @@ export default function Page() {
             </div>
 
             <div className='flex items-center space-x-4'>
-              <Link
-                href='/signin'
-                className='text-slate-300 hover:text-white transition-colors'
-              >
-                Sign In
-              </Link>
+              {/* ✅ Only show Sign In if NOT authenticated */}
+              {!isCheckingAuth && !isAuthenticated && (
+                <Link
+                  href='/signin'
+                  className='text-slate-300 hover:text-white transition-colors'
+                >
+                  Sign In
+                </Link>
+              )}
+              {isAuthenticated && (
+                <>
+                  <span className='text-teal-400 font-semibold'>
+                    Hi, {authUser?.fullName || 'User'}
+                  </span>
+                  <button
+                    onClick={logout}
+                    className='bg-red-500 hover:bg-red-600 text-white rounded-lg px-4 py-2'
+                  >
+                    Logout
+                  </button>
+                </>
+              )}
+
               {/* Mobile Hamburger */}
               <button
                 className='md:hidden text-slate-300 hover:text-white'
