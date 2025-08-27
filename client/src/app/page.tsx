@@ -15,6 +15,7 @@ import {
   ChevronDown,
   Menu,
   X,
+  Loader,
 } from 'lucide-react';
 import useAuthStore from '../store/useAuthStore';
 
@@ -115,6 +116,16 @@ export default function Page() {
       scrollToSection('features');
     }
   };
+
+  if (isCheckingAuth && !authUser) {
+    // if (true) {
+    return (
+      <div className='flex items-center justify-center h-screen'>
+        <Loader className='size-10 animate-spin' />
+      </div>
+    );
+  }
+  console.log('authUser:', authUser);
 
   return (
     <div className='min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900'>

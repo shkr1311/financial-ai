@@ -212,9 +212,16 @@ const check = async (req, res) => {
 
 const logout = async (req, res) => {
   try {
-    res.cookie('jwt', '', { maxAge: 0 });
+    res.cookie('jwt', '', {
+      httpOnly: true,
+      sameSite: 'none',
+      secure: process.env.NODE_ENV !== 'development',
+      expires: new Date(0),
+    });
+
     return res.status(200).json({ message: 'Logged Out Successfully!' });
   } catch (error) {
+    console.error('Logout Error:', error);
     res.status(500).json({ message: 'Internal Server Error!' });
   }
 };
