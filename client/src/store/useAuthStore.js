@@ -92,7 +92,7 @@ const useAuthStore = create((set) => ({
 
   logout: async () => {
     try {
-      await axiosInstance.post('/auth/logout', {}, { withCredentials: true });
+      await axiosInstance.post('/auth/logout');
 
       set({
         authUser: null,
