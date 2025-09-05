@@ -18,6 +18,7 @@ import {
   Loader,
 } from 'lucide-react';
 import useAuthStore from '../store/useAuthStore';
+import useStockStore from '../store/useStockStore';
 
 const features = [
   {
@@ -97,6 +98,7 @@ export default function Page() {
   // ✅ get auth state from store
   const { authUser, isAuthenticated, checkAuth, isCheckingAuth, logout } =
     useAuthStore();
+  const { fetchLiveStockData, fetchRecentData, stockData, error, loading } = useStockStore();
 
   useEffect(() => {
     checkAuth(); // ✅ check auth on mount
@@ -108,6 +110,20 @@ export default function Page() {
     }, 3000);
     return () => clearInterval(interval);
   }, []);
+
+  useEffect(() => {
+    const testLiveData = async () => {
+      // await fetchLiveStockData('AAPL');
+      await fetchRecentData('AAPL');
+    };
+
+    testLiveData();
+  }, []);
+
+  useEffect(() => {
+    console.log('Live Stock Data:', stockData);
+  }, [stockData])
+
 
   const handleFeatureClick = (feature: (typeof features)[0]) => {
     if (feature.available) {

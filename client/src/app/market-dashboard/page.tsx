@@ -1,6 +1,6 @@
 "use client"
 
-import { useState } from "react"
+import { useEffect, useState } from "react"
 import { Button } from "@/components/ui/button"
 import { Card } from "@/components/ui/card"
 import {
@@ -15,10 +15,15 @@ import {
   AlertTriangle,
   CheckCircle,
   XCircle,
+  Loader,
 } from "lucide-react"
 import Link from "next/link"
+import useStockStore from "@/store/useStockStore"
 
 export default function MarketDashboard() {
+  const {fetchMultipleLiveStocks, stockData, error, loading} = useStockStore()
+  // const {fetchMultipleLiveStocks, error, loading} = useStockStore()
+  
   const [selectedTimeframe, setSelectedTimeframe] = useState("1D")
   const [hoveredSector, setHoveredSector] = useState<string | null>(null)
 
@@ -95,6 +100,29 @@ export default function MarketDashboard() {
     )
   }
 
+  // const stockData = null
+  useEffect(() => {
+    const testLiveData = async () => {
+      // await fetchLiveStockData('AAPL');
+      await fetchMultipleLiveStocks(['AAPL', '^NSEI', 'GLD', 'CL=F', 'USDINR=X']);
+      console.log('Live Stock Data:', stockData);
+    };
+
+    testLiveData();
+  }, []);
+
+  useEffect(() => {
+    console.log('stockData', stockData)
+  }, [stockData])
+
+  if (loading) {
+    return (
+      <div className='flex items-center justify-center h-screen'>
+        <Loader className='size-10 animate-spin' />
+      </div>
+    );
+  }
+    
   return (
     <div className="min-h-screen bg-background">
       {/* Header */}
@@ -127,7 +155,7 @@ export default function MarketDashboard() {
         <section>
           <h2 className="font-display font-semibold text-2xl text-foreground mb-6">Live Market Indices</h2>
           <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4">
-            {marketIndices.map((index) => (
+            {!stockData && marketIndices.map((index) => (
               <Card key={index.name} className="glass p-4 hover:scale-105 transition-all duration-300">
                 <div className="flex items-center justify-between mb-2">
                   <h3 className="font-medium text-foreground text-sm">{index.name}</h3>
@@ -150,6 +178,45 @@ export default function MarketDashboard() {
                 </div>
               </Card>
             ))}
+            {stockData &&
+  Object.entries(stockData).map(([ticker, data]) => {
+    const summary = data.summary
+    return (
+      <Card
+        key={ticker}
+        className="glass p-4 hover:scale-105 transition-all duration-300"
+      >
+        <div className="flex items-center justify-between mb-2">
+          <h3 className="font-medium text-foreground text-sm">{ticker}</h3>
+          {summary.positive ? (
+            <TrendingUp className="w-4 h-4 text-financial-teal" />
+          ) : (
+            <TrendingDown className="w-4 h-4 text-financial-coral" />
+          )}
+        </div>
+        <div className="space-y-1">
+          <p className="font-bold text-lg text-foreground">{summary.value}</p>
+          <div className="flex items-center space-x-2 text-sm">
+            <span
+              className={
+                summary.positive ? "text-financial-teal" : "text-financial-coral"
+              }
+            >
+              {summary.change}
+            </span>
+            <span
+              className={
+                summary.positive ? "text-financial-teal" : "text-financial-coral"
+              }
+            >
+              {summary.percent}
+            </span>
+          </div>
+        </div>
+      </Card>
+    )
+  })}
+
           </div>
         </section>
 

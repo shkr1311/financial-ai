@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StockAPI - API Quick Start Guide</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #2a2a2a;
+      color: #e0e0e0;
+      line-height: 1.6;
+    }
+    
+    .neomorphic {
+      background: #2a2a2a;
+      border-radius: 20px;
+      box-shadow: 
+        8px 8px 16px #1e1e1e,
+        -8px -8px 16px #363636;
+    }
+    
+    .neomorphic-inset {
+      background: #2a2a2a;
+      border-radius: 20px;
+      box-shadow: 
+        inset 8px 8px 16px #1e1e1e,
+        inset -8px -8px 16px #363636;
+    }
+    
+    .neomorphic-button {
+      background: #2a2a2a;
+      border: none;
+      border-radius: 16px;
+      box-shadow: 
+        6px 6px 12px #1e1e1e,
+        -6px -6px 12px #363636;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      color: #e0e0e0;
+    }
+    
+    .neomorphic-button:hover {
+      box-shadow: 
+        4px 4px 8px #1e1e1e,
+        -4px -4px 8px #363636;
+      transform: translateY(-1px);
+    }
+    
+    .neomorphic-button:active {
+      box-shadow: 
+        inset 4px 4px 8px #1e1e1e,
+        inset -4px -4px 8px #363636;
+      transform: translateY(1px);
+    }
+
+    .text-gradient {
+      background: linear-gradient(135deg, #4f46e5, #6366f1, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .code-block {
+      background-color: #1e1e1e;
+      border-radius: 12px;
+      padding: 1rem;
+      font-family: 'Fira Code', 'Monaco', 'Consolas', monospace;
+      color: #ccc;
+      white-space: pre-wrap;
+      word-wrap: break-word;
+      overflow-x: auto;
+    }
+
+    /* Utility classes */
+    .min-h-screen { min-height: 100vh; }
+    .flex { display: flex; }
+    .items-center { align-items: center; }
+    .justify-center { justify-content: center; }
+    .justify-between { justify-content: space-between; }
+    .text-center { text-align: center; }
+    .space-x-3 > * + * { margin-left: 0.75rem; }
+    .space-x-4 > * + * { margin-left: 1rem; }
+    .space-y-12 > * + * { margin-top: 3rem; }
+    .p-3 { padding: 0.75rem; }
+    .p-4 { padding: 1rem; }
+    .p-8 { padding: 2rem; }
+    .mb-2 { margin-bottom: 0.5rem; }
+    .mb-4 { margin-bottom: 1rem; }
+    .mb-8 { margin-bottom: 2rem; }
+    .mt-4 { margin-top: 1rem; }
+    .mt-6 { margin-top: 1.5rem; }
+    .mt-8 { margin-top: 2rem; }
+    .w-5 { width: 1.25rem; }
+    .w-7 { width: 1.75rem; }
+    .w-8 { width: 2rem; }
+    .w-full { width: 100%; }
+    .h-5 { height: 1.25rem; }
+    .h-7 { height: 1.75rem; }
+    .h-8 { height: 2rem; }
+    .max-w-sm { max-width: 24rem; }
+    .max-w-4xl { max-width: 56rem; }
+    .mx-auto { margin-left: auto; margin-right: auto; }
+    .rounded-xl { border-radius: 0.75rem; }
+    .text-sm { font-size: 0.875rem; }
+    .text-base { font-size: 1rem; }
+    .text-lg { font-size: 1.125rem; }
+    .text-2xl { font-size: 1.5rem; }
+    .text-3xl { font-size: 1.875rem; }
+    .text-4xl { font-size: 2.25rem; }
+    .font-bold { font-weight: 700; }
+    .font-medium { font-weight: 500; }
+    .font-semibold { font-weight: 600; }
+    .text-white { color: #ffffff; }
+    .text-gray-300 { color: #d1d5db; }
+    .text-gray-400 { color: #9ca3af; }
+    .text-gray-500 { color: #6b7280; }
+    .text-green-400 { color: #34d399; }
+    .block { display: block; }
+    .relative { position: relative; }
+    .focus\:outline-none:focus { outline: 2px solid transparent; outline-offset: 2px; }
+
+    /* Icon styling */
+    .icon {
+      width: 1em;
+      height: 1em;
+      display: inline-block;
+      vertical-align: middle;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+    }
+
+    /* Input styling */
+    input[type="text"] {
+      background: transparent;
+      border: none;
+      outline: none;
+    }
+
+    input[type="text"]::placeholder {
+      color: #6b7280;
+    }
+
+    /* Media queries */
+    @media (min-width: 768px) {
+      .md\:p-8 { padding: 2rem; }
+      .md\:p-12 { padding: 3rem; }
+      .md\:text-base { font-size: 1rem; }
+      .md\:text-4xl { font-size: 2.25rem; }
+    }
+
+    /* Copy button animation */
+    .copy-success {
+      animation: pulse 0.5s ease-in-out;
+    }
+
+    @keyframes pulse {
+      0%, 100% { transform: scale(1); }
+      50% { transform: scale(1.1); }
+    }
+  </style>
+</head>
+<body>
+  <div class="min-h-screen p-4 md:p-8 flex items-center justify-center">
+    <div class="w-full max-w-4xl">
+      <!-- Header -->
+      <header class="flex items-center justify-center space-x-3 mb-8">
+        <div class="neomorphic-inset p-3 rounded-xl">
+          <svg class="w-8 h-8 text-gradient icon" viewBox="0 0 24 24">
+            <path d="M3 3v18h18" stroke="currentColor" stroke-width="2" fill="none"/>
+            <path d="m19 9-5 5-4-4-3 3" stroke="currentColor" stroke-width="2" fill="none"/>
+          </svg>
+        </div>
+        <h1 class="text-3xl md:text-4xl font-bold text-white">API Quick Start</h1>
+      </header>
+
+      <!-- Main Instruction Card -->
+      <main class="neomorphic p-8 md:p-12">
+        <div class="text-center mb-8">
+          <p class="text-lg text-gray-300">
+            Use the endpoints below to access our stock data.
+          </p>
+          <div class="mt-6 max-w-sm mx-auto">
+            <label for="ticker-input" class="block text-sm font-medium text-gray-400 mb-2">
+              Enter a Stock Ticker
+            </label>
+            <input
+              id="ticker-input"
+              type="text"
+              value="AAPL"
+              placeholder="e.g., AAPL"
+              class="neomorphic-inset w-full p-4 text-center text-lg font-semibold text-white focus:outline-none"
+              oninput="updateTicker(this.value)"
+            />
+          </div>
+        </div>
+
+        <div class="space-y-12">
+          <!-- Endpoint 1: Historical Data -->
+          <section class="neomorphic p-8">
+            <div class="flex items-center space-x-4 mb-4">
+              <div class="neomorphic-inset p-4 rounded-xl">
+                <svg class="w-7 h-7 text-gradient icon" viewBox="0 0 24 24">
+                  <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
+                  <polyline points="12,6 12,12 16,14" stroke="currentColor" stroke-width="2" fill="none"/>
+                </svg>
+              </div>
+              <div>
+                <h2 class="text-2xl font-bold text-white">Last 5 Days Data</h2>
+                <p class="text-gray-400">Fetch closing prices for the last 5 trading days.</p>
+              </div>
+            </div>
+            <div class="relative neomorphic-inset p-4 flex items-center justify-between">
+              <code id="historical-url" class="text-gray-300 text-sm md:text-base">http://127.0.0.1:8000/stocks/AAPL</code>
+              <button onclick="copyToClipboard('historical-url', 'hist')" class="neomorphic-button p-3" id="copy-hist-btn">
+                <svg class="w-5 h-5 icon" viewBox="0 0 24 24" id="copy-hist-icon">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" stroke="currentColor" stroke-width="2" fill="none"/>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="2" fill="none"/>
+                </svg>
+              </button>
+            </div>
+            <div class="mt-4">
+              <p class="text-sm text-gray-400 mb-2">Example usage with `curl`:</p>
+              <div class="code-block" id="historical-example">curl -X GET "http://127.0.0.1:8000/stocks/AAPL" \
+  -H "Authorization: Bearer YOUR_API_KEY"</div>
+            </div>
+          </section>
+
+          <!-- Endpoint 2: Live Data -->
+          <section class="neomorphic p-8">
+            <div class="flex items-center space-x-4 mb-4">
+              <div class="neomorphic-inset p-4 rounded-xl">
+                <svg class="w-7 h-7 text-gradient icon" viewBox="0 0 24 24">
+                  <polygon points="13,2 3,14 12,14 11,22 21,10 12,10" stroke="currentColor" stroke-width="2" fill="none"/>
+                </svg>
+              </div>
+              <div>
+                <h2 class="text-2xl font-bold text-white">Live Market Data</h2>
+                <p class="text-gray-400">Get the current, real-time stock price and data.</p>
+              </div>
+            </div>
+            <div class="relative neomorphic-inset p-4 flex items-center justify-between">
+              <code id="live-url" class="text-gray-300 text-sm md:text-base">http://127.0.0.1:8000/stocks/live/AAPL</code>
+              <button onclick="copyToClipboard('live-url', 'live')" class="neomorphic-button p-3" id="copy-live-btn">
+                <svg class="w-5 h-5 icon" viewBox="0 0 24 24" id="copy-live-icon">
+                  <rect x="9" y="9" width="13" height="13" rx="2" ry="2" stroke="currentColor" stroke-width="2" fill="none"/>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="2" fill="none"/>
+                </svg>
+              </button>
+            </div>
+            <div class="mt-4">
+              <p class="text-sm text-gray-400 mb-2">Example usage with `fetch`:</p>
+              <div class="code-block" id="live-example">fetch('http://127.0.0.1:8000/stocks/live/AAPL', {
+  headers: {
+    'Authorization': 'Bearer YOUR_API_KEY'
+  }
+})
+.then(response => response.json())
+.then(data => console.log(data));</div>
+            </div>
+          </section>
+        </div>
+      </main>
+
+      <!-- Footer -->
+      <footer class="text-center mt-8">
+        <p class="text-gray-500 text-sm">© 2024 StockAPI. All rights reserved.</p>
+      </footer>
+    </div>
+  </div>
+
+  <script>
+    let copiedTimeout = null;
+    let currentTicker = 'AAPL';
+
+    function updateTicker(value) {
+      currentTicker = value.toUpperCase() || 'AAPL';
+      const displayTicker = currentTicker || '{stock_name}';
+      
+      // Update URLs
+      const historicalUrl = `http://127.0.0.1:8000/stocks/${displayTicker}`;
+      const liveUrl = `http://127.0.0.1:8000/stocks/live/${displayTicker}`;
+      
+      document.getElementById('historical-url').textContent = historicalUrl;
+      document.getElementById('live-url').textContent = liveUrl;
+      
+      // Update examples
+      document.getElementById('historical-example').textContent = 
+        `curl -X GET "${historicalUrl}" \\\n  -H "Authorization: Bearer YOUR_API_KEY"`;
+      
+      document.getElementById('live-example').textContent = 
+        `fetch('${liveUrl}', {\n  headers: {\n    'Authorization': 'Bearer YOUR_API_KEY'\n  }\n})\n.then(response => response.json())\n.then(data => console.log(data));`;
+    }
+
+    function copyToClipboard(elementId, type) {
+      const element = document.getElementById(elementId);
+      const text = element.textContent;
+      
+      navigator.clipboard.writeText(text).then(() => {
+        // Clear any existing timeout
+        if (copiedTimeout) {
+          clearTimeout(copiedTimeout);
+        }
+        
+        // Update icon to checkmark
+        const iconElement = document.getElementById(`copy-${type}-icon`);
+        const buttonElement = document.getElementById(`copy-${type}-btn`);
+        
+        iconElement.innerHTML = `
+          <polyline points="20,6 9,17 4,12" stroke="currentColor" stroke-width="2" fill="none"/>
+        `;
+        iconElement.style.color = '#34d399';
+        buttonElement.classList.add('copy-success');
+        
+        // Reset after 2 seconds
+        copiedTimeout = setTimeout(() => {
+          iconElement.innerHTML = `
+            <rect x="9" y="9" width="13" height="13" rx="2" ry="2" stroke="currentColor" stroke-width="2" fill="none"/>
+            <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1" stroke="currentColor" stroke-width="2" fill="none"/>
+          `;
+          iconElement.style.color = '';
+          buttonElement.classList.remove('copy-success');
+        }, 2000);
+      }).catch(err => {
+        console.error('Failed to copy text: ', err);
+      });
+    }
+
+    // Initialize on page load
+    document.addEventListener('DOMContentLoaded', function() {
+      updateTicker('AAPL');
+    });
+  </script>
+</body>
+</html>

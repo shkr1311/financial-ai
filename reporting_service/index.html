@@ -1,0 +1,241 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Lo Shu Grid Analyzer</title>
+  <style>
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: linear-gradient(to right, #e0f7fa, #e1bee7);
+      color: #333;
+      margin: 0;
+      padding: 0;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+    }
+
+    h1 {
+      margin-top: 40px;
+      color: #4a148c;
+    }
+
+    .container {
+      background-color: white;
+      padding: 30px;
+      border-radius: 12px;
+      box-shadow: 0 0 12px rgba(0, 0, 0, 0.15);
+      max-width: 900px;
+      width: 100%;
+      margin-top: 20px;
+    }
+
+    input[type="date"] {
+      padding: 10px;
+      font-size: 16px;
+      border: 2px solid #4a148c;
+      border-radius: 8px;
+      width: 100%;
+      max-width: 300px;
+      margin-right: 10px;
+    }
+
+    button {
+      background-color: #4a148c;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      font-size: 16px;
+      border-radius: 8px;
+      cursor: pointer;
+      margin-top: 10px;
+    }
+
+    button:hover {
+      background-color: #6a1b9a;
+    }
+
+    .grid {
+      display: grid;
+      grid-template-columns: repeat(3, 80px);
+      gap: 10px;
+      justify-content: center;
+      margin: 30px 0;
+    }
+
+    .cell {
+      width: 80px;
+      height: 80px;
+      background-color: #f3e5f5;
+      border: 2px solid #4a148c;
+      border-radius: 8px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-weight: bold;
+      font-size: 18px;
+      color: #4a148c;
+    }
+
+    .analysis {
+      text-align: left;
+      margin-top: 20px;
+    }
+
+    .analysis h3 {
+      color: #4a148c;
+      margin-top: 20px;
+    }
+
+    ul {
+      padding-left: 20px;
+    }
+
+    @media (max-width: 600px) {
+      .grid {
+        grid-template-columns: repeat(3, 60px);
+      }
+
+      .cell {
+        width: 60px;
+        height: 60px;
+        font-size: 16px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <h1>Lo Shu Grid Analyzer</h1>
+  <div class="container">
+    <label for="dob">Enter Date of Birth:</label><br/><br/>
+    <input type="date" id="dob" />
+    <br />
+    <button onclick="analyzeDOB()">Analyze</button>
+
+    <div class="grid" id="loShuGrid"></div>
+    <div class="analysis" id="analysisOutput"></div>
+  </div>
+
+  <script>
+    const loShuMap = {
+      1: [2, 1],
+      2: [0, 2],
+      3: [1, 0],
+      4: [0, 0],
+      5: [1, 1],
+      6: [2, 2],
+      7: [1, 2],
+      8: [2, 0],
+      9: [0, 1],
+    };
+
+    function analyzeDOB() {
+      const dob = document.getElementById('dob').value;
+      if (!dob) return alert("Please enter a valid date of birth.");
+
+      const digits = dob.replace(/-/g, '').split('').map(Number);
+      const grid = Array(3).fill(null).map(() => Array(3).fill(''));
+      const freq = {};
+
+      digits.forEach((digit) => {
+        if (digit === 0) return;
+        const [row, col] = loShuMap[digit];
+        grid[row][col] += digit + ' ';
+        freq[digit] = (freq[digit] || 0) + 1;
+      });
+
+      // Render Grid
+      const gridDiv = document.getElementById('loShuGrid');
+      gridDiv.innerHTML = '';
+      for (let r = 0; r < 3; r++) {
+        for (let c = 0; c < 3; c++) {
+          gridDiv.innerHTML += `<div class="cell">${grid[r][c] || '-'}</div>`;
+        }
+      }
+
+      // Generate Analysis
+      const output = document.getElementById('analysisOutput');
+      output.innerHTML = generateAnalysis(freq);
+    }
+
+    function generateAnalysis(freq) {
+      const lines = [];
+
+      const interpret = (n, count) => {
+        if (!count) return '';
+        switch (n) {
+          case 1: return `<li><strong>1 (×${count}):</strong> Willpower, independence, leadership${count >= 3 ? ' — can become egoistic or overly dominant' : ''}.</li>`;
+          case 2: return `<li><strong>2 (×${count}):</strong> Sensitivity, emotional depth, diplomacy${count >= 2 ? ' — may experience mood swings' : ''}.</li>`;
+          case 3: return `<li><strong>3 (×${count}):</strong> Communication, expression, creativity${count >= 2 ? ' — may overtalk or exaggerate' : ''}.</li>`;
+          case 4: return `<li><strong>4:</strong> Practical, disciplined, detail-oriented.</li>`;
+          case 5: return `<li><strong>5:</strong> Balance, freedom-loving, adaptable — center of the grid.</li>`;
+          case 6: return `<li><strong>6:</strong> Responsibility, family-oriented, caring, nurturing.</li>`;
+          case 7: return `<li><strong>7:</strong> Introspection, spiritual learning, deep thinker.</li>`;
+          case 8: return `<li><strong>8:</strong> Ambition, success-driven, business-minded.</li>`;
+          case 9: return `<li><strong>9:</strong> Idealistic, humanitarian, emotionally wise.</li>`;
+          default: return '';
+        }
+      };
+
+      lines.push('<h3>Number Frequency Analysis:</h3><ul>');
+      for (let i = 1; i <= 9; i++) {
+        if (freq[i]) lines.push(interpret(i, freq[i]));
+      }
+      lines.push('</ul>');
+
+      lines.push(`<h3>General Insights:</h3>`);
+
+      // Special patterns
+      const allPresent = Object.keys(freq).length === 9;
+      if (allPresent) {
+        lines.push(`<p><strong>All numbers present:</strong> Extremely rare. Indicates a well-balanced, gifted personality able to adapt to all areas of life.</p>`);
+      }
+
+      const arrow = (a, b, c) => freq[a] && freq[b] && freq[c];
+
+      if (arrow(1, 5, 9)) {
+        lines.push(`<p><strong>Arrow of Determination (1-5-9):</strong> Strong-willed, goal-oriented, persistent under pressure.</p>`);
+      }
+
+      if (arrow(3, 5, 7)) {
+        lines.push(`<p><strong>Arrow of Willpower (3-5-7):</strong> Intense personal drive, self-discipline, and resilience.</p>`);
+      }
+
+      if (arrow(4, 5, 6)) {
+        lines.push(`<p><strong>Arrow of Practicality (4-5-6):</strong> Excellent in handling real-world matters and responsibilities.</p>`);
+      }
+
+      if (arrow(2, 5, 8)) {
+        lines.push(`<p><strong>Arrow of Emotions (2-5-8):</strong> Emotionally sensitive and intuitive, strong people skills.</p>`);
+      }
+
+      if (arrow(1, 2, 3)) {
+        lines.push(`<p><strong>Top Row Full (1-2-3):</strong> Strong mental plane, analytical and intellectual thinker.</p>`);
+      }
+
+      if (arrow(4, 5, 6)) {
+        lines.push(`<p><strong>Middle Row Full (4-5-6):</strong> Grounded, practical, reliable personality.</p>`);
+      }
+
+      if (arrow(7, 8, 9)) {
+        lines.push(`<p><strong>Bottom Row Full (7-8-9):</strong> Emotionally rich, spiritually deep, heart-led decision maker.</p>`);
+      }
+
+      if (arrow(1, 4, 7)) {
+        lines.push(`<p><strong>Left Column Full (1-4-7):</strong> Strong physical presence, energetic, proactive.</p>`);
+      }
+
+      if (arrow(3, 6, 9)) {
+        lines.push(`<p><strong>Right Column Full (3-6-9):</strong> Emotionally intelligent, empathetic, people person.</p>`);
+      }
+
+      if (arrow(1, 5, 9) && arrow(3, 5, 7)) {
+        lines.push(`<p><strong>Double Arrow: Determination + Willpower:</strong> Powerful personality, unstoppable when focused.</p>`);
+      }
+
+      return lines.join('');
+    }
+  </script>
+</body>
+</html>

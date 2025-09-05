@@ -1,0 +1,870 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>StockAPI - Real-Time Stock Market Data</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+    
+    body {
+      font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+      background-color: #2a2a2a;
+      color: #e0e0e0;
+      line-height: 1.6;
+    }
+    
+    .neomorphic {
+      background: #2a2a2a;
+      border-radius: 20px;
+      box-shadow: 
+        8px 8px 16px #1e1e1e,
+        -8px -8px 16px #363636;
+    }
+    
+    .neomorphic-inset {
+      background: #2a2a2a;
+      border-radius: 20px;
+      box-shadow: 
+        inset 8px 8px 16px #1e1e1e,
+        inset -8px -8px 16px #363636;
+    }
+    
+    .neomorphic-button {
+      background: #2a2a2a;
+      border: none;
+      border-radius: 16px;
+      box-shadow: 
+        6px 6px 12px #1e1e1e,
+        -6px -6px 12px #363636;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      color: #e0e0e0;
+    }
+    
+    .neomorphic-button:hover {
+      box-shadow: 
+        4px 4px 8px #1e1e1e,
+        -4px -4px 8px #363636;
+      transform: translateY(-1px);
+    }
+    
+    .neomorphic-button:active,
+    .neomorphic-button.pressed {
+      box-shadow: 
+        inset 4px 4px 8px #1e1e1e,
+        inset -4px -4px 8px #363636;
+      transform: translateY(1px);
+    }
+    
+    .neomorphic-card {
+      background: #2a2a2a;
+      border-radius: 24px;
+      box-shadow: 
+        12px 12px 24px #1e1e1e,
+        -12px -12px 24px #363636;
+      transition: all 0.3s ease;
+    }
+    
+    .neomorphic-card:hover {
+      box-shadow: 
+        16px 16px 32px #1a1a1a,
+        -16px -16px 32px #3a3a3a;
+      transform: translateY(-2px);
+    }
+    
+    .primary-button {
+      background: linear-gradient(135deg, #4f46e5, #6366f1);
+      color: white;
+      border: none;
+      border-radius: 16px;
+      box-shadow: 
+        6px 6px 12px #1e1e1e,
+        -6px -6px 12px #363636,
+        inset 0 1px 0 rgba(255,255,255,0.1);
+      cursor: pointer;
+      transition: all 0.3s ease;
+      font-weight: 600;
+    }
+    
+    .primary-button:hover {
+      transform: translateY(-2px);
+      box-shadow: 
+        8px 8px 16px #1a1a1a,
+        -8px -8px 16px #3a3a3a,
+        inset 0 1px 0 rgba(255,255,255,0.2);
+    }
+    
+    .primary-button:active {
+      transform: translateY(0);
+      box-shadow: 
+        inset 4px 4px 8px rgba(0,0,0,0.3),
+        inset -4px -4px 8px rgba(255,255,255,0.1);
+    }
+    
+    .text-gradient {
+      background: linear-gradient(135deg, #4f46e5, #6366f1, #8b5cf6);
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+      background-clip: text;
+    }
+    
+    .section-divider {
+      height: 1px;
+      background: linear-gradient(90deg, transparent, #404040, transparent);
+      margin: 4rem 0;
+    }
+    
+    @keyframes float {
+      0%, 100% { transform: translateY(0px); }
+      50% { transform: translateY(-10px); }
+    }
+    
+    .floating {
+      animation: float 6s ease-in-out infinite;
+    }
+    
+    .glow {
+      box-shadow: 
+        0 0 20px rgba(79, 70, 229, 0.3),
+        6px 6px 12px #1e1e1e,
+        -6px -6px 12px #363636;
+    }
+
+    /* Additional utility classes */
+    .min-h-screen { min-height: 100vh; }
+    .mx-4 { margin-left: 1rem; margin-right: 1rem; }
+    .mx-6 { margin-left: 1.5rem; margin-right: 1.5rem; }
+    .mx-8 { margin-left: 2rem; margin-right: 2rem; }
+    .mx-auto { margin-left: auto; margin-right: auto; }
+    .mt-4 { margin-top: 1rem; }
+    .mb-2 { margin-bottom: 0.5rem; }
+    .mb-4 { margin-bottom: 1rem; }
+    .mb-6 { margin-bottom: 1.5rem; }
+    .mb-8 { margin-bottom: 2rem; }
+    .mb-16 { margin-bottom: 4rem; }
+    .mr-3 { margin-right: 0.75rem; }
+    .ml-2 { margin-left: 0.5rem; }
+    .px-4 { padding-left: 1rem; padding-right: 1rem; }
+    .px-6 { padding-left: 1.5rem; padding-right: 1.5rem; }
+    .px-8 { padding-left: 2rem; padding-right: 2rem; }
+    .py-2 { padding-top: 0.5rem; padding-bottom: 0.5rem; }
+    .py-3 { padding-top: 0.75rem; padding-bottom: 0.75rem; }
+    .py-4 { padding-top: 1rem; padding-bottom: 1rem; }
+    .py-6 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+    .py-12 { padding-top: 3rem; padding-bottom: 3rem; }
+    .py-16 { padding-top: 4rem; padding-bottom: 4rem; }
+    .p-2 { padding: 0.5rem; }
+    .p-3 { padding: 0.75rem; }
+    .p-4 { padding: 1rem; }
+    .p-6 { padding: 1.5rem; }
+    .p-8 { padding: 2rem; }
+    .p-12 { padding: 3rem; }
+    .w-5 { width: 1.25rem; }
+    .w-6 { width: 1.5rem; }
+    .w-8 { width: 2rem; }
+    .w-12 { width: 3rem; }
+    .w-16 { width: 4rem; }
+    .w-full { width: 100%; }
+    .h-5 { height: 1.25rem; }
+    .h-6 { height: 1.5rem; }
+    .h-8 { height: 2rem; }
+    .h-12 { height: 3rem; }
+    .h-16 { height: 4rem; }
+    .max-w-3xl { max-width: 48rem; }
+    .max-w-4xl { max-width: 56rem; }
+    .max-w-6xl { max-width: 72rem; }
+    .flex { display: flex; }
+    .inline-block { display: inline-block; }
+    .hidden { display: none; }
+    .grid { display: grid; }
+    .items-center { align-items: center; }
+    .items-start { align-items: flex-start; }
+    .justify-between { justify-content: space-between; }
+    .justify-center { justify-content: center; }
+    .text-center { text-align: center; }
+    .text-left { text-align: left; }
+    .text-sm { font-size: 0.875rem; }
+    .text-lg { font-size: 1.125rem; }
+    .text-xl { font-size: 1.25rem; }
+    .text-2xl { font-size: 1.5rem; }
+    .text-3xl { font-size: 1.875rem; }
+    .text-4xl { font-size: 2.25rem; }
+    .text-5xl { font-size: 3rem; }
+    .text-7xl { font-size: 4.5rem; }
+    .font-bold { font-weight: 700; }
+    .font-semibold { font-weight: 600; }
+    .leading-tight { line-height: 1.25; }
+    .text-white { color: #ffffff; }
+    .text-gray-300 { color: #d1d5db; }
+    .text-gray-400 { color: #9ca3af; }
+    .text-green-400 { color: #34d399; }
+    .text-yellow-400 { color: #fbbf24; }
+    .space-x-2 > * + * { margin-left: 0.5rem; }
+    .space-x-4 > * + * { margin-left: 1rem; }
+    .space-x-8 > * + * { margin-left: 2rem; }
+    .space-y-2 > * + * { margin-top: 0.5rem; }
+    .space-y-3 > * + * { margin-top: 0.75rem; }
+    .space-y-4 > * + * { margin-top: 1rem; }
+    .gap-4 { gap: 1rem; }
+    .gap-8 { gap: 2rem; }
+    .rounded-lg { border-radius: 0.5rem; }
+    .rounded-xl { border-radius: 0.75rem; }
+    .rounded-2xl { border-radius: 1rem; }
+    .transition-colors { transition-property: color, background-color, border-color; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
+    .transition-all { transition-property: all; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
+    .transition-transform { transition-property: transform; transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1); transition-duration: 150ms; }
+    .fill-current { fill: currentColor; }
+    .hover\:text-white:hover { color: #ffffff; }
+    .focus\:outline-none:focus { outline: 2px solid transparent; outline-offset: 2px; }
+    .relative { position: relative; }
+    .absolute { position: absolute; }
+    .-top-4 { top: -1rem; }
+    .left-1\/2 { left: 50%; }
+    .transform { transform: translateX(var(--tw-translate-x, 0)) translateY(var(--tw-translate-y, 0)) rotate(var(--tw-rotate, 0)) skewX(var(--tw-skew-x, 0)) skewY(var(--tw-skew-y, 0)) scaleX(var(--tw-scale-x, 1)) scaleY(var(--tw-scale-y, 1)); }
+    .-translate-x-1\/2 { --tw-translate-x: -50%; }
+    .rotate-180 { --tw-rotate: 180deg; }
+    .overflow-hidden { overflow: hidden; }
+
+    /* Flexbox utilities */
+    .flex-col { flex-direction: column; }
+    .flex-row { flex-direction: row; }
+
+    /* Icon styling */
+    .icon {
+      width: 1em;
+      height: 1em;
+      display: inline-block;
+      vertical-align: middle;
+      stroke: currentColor;
+      stroke-width: 2;
+      stroke-linecap: round;
+      stroke-linejoin: round;
+      fill: none;
+    }
+
+    .icon.fill-current {
+      fill: currentColor;
+      stroke: none;
+    }
+
+    /* Media queries */
+    @media (min-width: 640px) {
+      .sm\:flex-row { flex-direction: row; }
+    }
+
+    @media (min-width: 768px) {
+      .md\:px-8 { padding-left: 2rem; padding-right: 2rem; }
+      .md\:py-6 { padding-top: 1.5rem; padding-bottom: 1.5rem; }
+      .md\:py-24 { padding-top: 6rem; padding-bottom: 6rem; }
+      .md\:p-16 { padding: 4rem; }
+      .md\:mx-8 { margin-left: 2rem; margin-right: 2rem; }
+      .md\:text-2xl { font-size: 1.5rem; }
+      .md\:text-5xl { font-size: 3rem; }
+      .md\:text-7xl { font-size: 4.5rem; }
+      .md\:flex { display: flex; }
+      .md\:grid-cols-2 { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+      .md\:grid-cols-3 { grid-template-columns: repeat(3, minmax(0, 1fr)); }
+      .md\:grid-cols-4 { grid-template-columns: repeat(4, minmax(0, 1fr)); }
+      .md\:flex-row { flex-direction: row; }
+      .md\:mt-0 { margin-top: 0; }
+    }
+
+    /* Accordion animation */
+    .accordion-content {
+      max-height: 0;
+      overflow: hidden;
+      transition: max-height 0.3s ease;
+    }
+
+    .accordion-content.active {
+      max-height: 200px;
+    }
+  </style>
+</head>
+<body>
+  <div class="min-h-screen">
+    <!-- Header -->
+    <header class="neomorphic mx-4 mt-4 md:mx-8">
+      <nav class="px-6 py-4 md:px-12 md:py-6">
+        <div class="flex items-center justify-between">
+          <div class="flex items-center space-x-2">
+            <div class="neomorphic-inset p-3 rounded-xl">
+              <svg class="w-8 h-8 text-gradient icon" viewBox="0 0 24 24">
+                <path d="M3 3v18h18" stroke="currentColor" stroke-width="2" fill="none"/>
+                <path d="m19 9-5 5-4-4-3 3" stroke="currentColor" stroke-width="2" fill="none"/>
+              </svg>
+            </div>
+            <span class="text-2xl font-bold text-white">StockAPI</span>
+          </div>
+          <div class="hidden md:flex items-center space-x-8">
+            <a href="#apis" class="text-gray-300 hover:text-white transition-colors">APIs</a>
+            <a href="#pricing" class="text-gray-300 hover:text-white transition-colors">Pricing</a>
+            <a href="{% url 'index' %}" class="text-gray-300 hover:text-white transition-colors">Docs</a>
+            <button class="primary-button px-6 py-3">Get Started</button>
+          </div>
+        </div>
+      </nav>
+    </header>
+
+    <!-- Hero Section -->
+    <section class="px-4 py-16 md:px-8 md:py-24">
+      <div class="max-w-6xl mx-auto text-center">
+        <div class="floating">
+          <div class="neomorphic-card p-8 md:p-16 inline-block">
+            <h1 class="text-4xl md:text-7xl font-bold mb-6 leading-tight">
+              <span class="text-white">Real-Time</span><br/>
+              <span class="text-gradient">Stock Market Data</span>
+            </h1>
+            <p class="text-xl md:text-2xl text-gray-300 mb-8 max-w-3xl mx-auto">
+              Access comprehensive financial data through our enterprise-grade APIs. 
+              Real-time quotes, historical data, and market insights for developers.
+            </p>
+            <div class="flex flex-col sm:flex-row gap-4 justify-center">
+              <button class="primary-button px-8 py-4 text-lg glow">
+                Start Free Trial
+              </button>
+              <a href="{% url 'index' %}">
+                <button class="neomorphic-button px-8 py-4 text-lg">
+                  View Documentation
+                </button>
+              </a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Features Section -->
+    <section class="px-4 py-16 md:px-8" id="features">
+      <div class="max-w-6xl mx-auto">
+        <h2 class="text-3xl md:text-5xl font-bold text-center mb-16 text-white">
+          Why Choose <span class="text-gradient">StockAPI</span>?
+        </h2>
+        <div class="grid md:grid-cols-3 gap-8">
+          <div class="neomorphic-card p-8 text-center">
+            <div class="neomorphic-inset p-6 rounded-2xl inline-block mb-6">
+              <svg class="w-8 h-8 text-gradient icon" viewBox="0 0 24 24">
+                <polygon points="13,2 3,14 12,14 11,22 21,10 12,10" stroke="currentColor" stroke-width="2" fill="none"/>
+              </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-white mb-4">Lightning Fast</h3>
+            <p class="text-gray-300">Sub-millisecond response times with global CDN distribution</p>
+          </div>
+
+          <div class="neomorphic-card p-8 text-center">
+            <div class="neomorphic-inset p-6 rounded-2xl inline-block mb-6">
+              <svg class="w-8 h-8 text-gradient icon" viewBox="0 0 24 24">
+                <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" stroke="currentColor" stroke-width="2" fill="none"/>
+              </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-white mb-4">Enterprise Security</h3>
+            <p class="text-gray-300">Bank-grade security with 99.9% uptime SLA</p>
+          </div>
+
+          <div class="neomorphic-card p-8 text-center">
+            <div class="neomorphic-inset p-6 rounded-2xl inline-block mb-6">
+              <svg class="w-8 h-8 text-gradient icon" viewBox="0 0 24 24">
+                <ellipse cx="12" cy="5" rx="9" ry="3" stroke="currentColor" stroke-width="2" fill="none"/>
+                <path d="M3 5v14c0 1.66 4.03 3 9 3s9-1.34 9-3V5" stroke="currentColor" stroke-width="2" fill="none"/>
+                <path d="M3 12c0 1.66 4.03 3 9 3s9-1.34 9-3" stroke="currentColor" stroke-width="2" fill="none"/>
+              </svg>
+            </div>
+            <h3 class="text-2xl font-bold text-white mb-4">Comprehensive Data</h3>
+            <p class="text-gray-300">Real-time and historical data for 50,000+ securities</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Available APIs Section -->
+    <section class="px-4 py-16 md:px-8" id="apis">
+      <div class="max-w-6xl mx-auto">
+        <h2 class="text-3xl md:text-5xl font-bold text-center mb-16 text-white">
+          Available <span class="text-gradient">APIs</span>
+        </h2>
+        <div class="grid md:grid-cols-2 gap-8">
+          <div class="neomorphic-card p-8">
+            <div class="flex items-start justify-between mb-6">
+              <h3 class="text-2xl font-bold text-white">Real-Time Quotes</h3>
+              <div class="neomorphic-inset px-4 py-2 rounded-lg">
+                <code class="text-gradient text-sm">/v1/quotes</code>
+              </div>
+            </div>
+            <p class="text-gray-300 mb-4">Get live stock prices with bid/ask spreads</p>
+            <div class="neomorphic-inset p-4 rounded-lg">
+              <p class="text-sm text-gray-400">Example: AAPL, MSFT, GOOGL</p>
+            </div>
+          </div>
+
+          <div class="neomorphic-card p-8">
+            <div class="flex items-start justify-between mb-6">
+              <h3 class="text-2xl font-bold text-white">Historical Data</h3>
+              <div class="neomorphic-inset px-4 py-2 rounded-lg">
+                <code class="text-gradient text-sm">/v1/historical</code>
+              </div>
+            </div>
+            <p class="text-gray-300 mb-4">Access years of historical price data</p>
+            <div class="neomorphic-inset p-4 rounded-lg">
+              <p class="text-sm text-gray-400">Example: Daily, Weekly, Monthly</p>
+            </div>
+          </div>
+
+          <div class="neomorphic-card p-8">
+            <div class="flex items-start justify-between mb-6">
+              <h3 class="text-2xl font-bold text-white">Market News</h3>
+              <div class="neomorphic-inset px-4 py-2 rounded-lg">
+                <code class="text-gradient text-sm">/v1/news</code>
+              </div>
+            </div>
+            <p class="text-gray-300 mb-4">Real-time financial news and sentiment</p>
+            <div class="neomorphic-inset p-4 rounded-lg">
+              <p class="text-sm text-gray-400">Example: Breaking news alerts</p>
+            </div>
+          </div>
+
+          <div class="neomorphic-card p-8">
+            <div class="flex items-start justify-between mb-6">
+              <h3 class="text-2xl font-bold text-white">Technical Indicators</h3>
+              <div class="neomorphic-inset px-4 py-2 rounded-lg">
+                <code class="text-gradient text-sm">/v1/indicators</code>
+              </div>
+            </div>
+            <p class="text-gray-300 mb-4">Pre-calculated technical analysis indicators</p>
+            <div class="neomorphic-inset p-4 rounded-lg">
+              <p class="text-sm text-gray-400">Example: RSI, MACD, Moving Averages</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- How It Works -->
+    <section class="px-4 py-16 md:px-8">
+      <div class="max-w-6xl mx-auto">
+        <h2 class="text-3xl md:text-5xl font-bold text-center mb-16 text-white">
+          How It <span class="text-gradient">Works</span>
+        </h2>
+        <div class="grid md:grid-cols-3 gap-8">
+          <div class="neomorphic-card p-8 text-center">
+            <div class="neomorphic-inset w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <span class="text-gradient text-2xl font-bold">01</span>
+            </div>
+            <svg class="w-12 h-12 text-gradient mx-auto mb-4 icon" viewBox="0 0 24 24">
+              <path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2" stroke="currentColor" stroke-width="2" fill="none"/>
+              <circle cx="9" cy="7" r="4" stroke="currentColor" stroke-width="2" fill="none"/>
+              <path d="m22 21-3-3" stroke="currentColor" stroke-width="2" fill="none"/>
+            </svg>
+            <h3 class="text-2xl font-bold text-white mb-4">Sign Up</h3>
+            <p class="text-gray-300">Create your account and get instant API access</p>
+          </div>
+
+          <div class="neomorphic-card p-8 text-center">
+            <div class="neomorphic-inset w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <span class="text-gradient text-2xl font-bold">02</span>
+            </div>
+            <svg class="w-12 h-12 text-gradient mx-auto mb-4 icon" viewBox="0 0 24 24">
+              <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10" stroke="currentColor" stroke-width="2" fill="none"/>
+            </svg>
+            <h3 class="text-2xl font-bold text-white mb-4">Authenticate</h3>
+            <p class="text-gray-300">Use your API key to authenticate requests</p>
+          </div>
+
+          <div class="neomorphic-card p-8 text-center">
+            <div class="neomorphic-inset w-16 h-16 rounded-2xl flex items-center justify-center mx-auto mb-6">
+              <span class="text-gradient text-2xl font-bold">03</span>
+            </div>
+            <svg class="w-12 h-12 text-gradient mx-auto mb-4 icon" viewBox="0 0 24 24">
+              <polyline points="16,18 22,12 16,6" stroke="currentColor" stroke-width="2" fill="none"/>
+              <polyline points="8,6 2,12 8,18" stroke="currentColor" stroke-width="2" fill="none"/>
+            </svg>
+            <h3 class="text-2xl font-bold text-white mb-4">Integrate</h3>
+            <p class="text-gray-300">Start building with our comprehensive documentation</p>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Pricing Section -->
+    <section class="px-4 py-16 md:px-8" id="pricing">
+      <div class="max-w-6xl mx-auto">
+        <h2 class="text-3xl md:text-5xl font-bold text-center mb-16 text-white">
+          Simple <span class="text-gradient">Pricing</span>
+        </h2>
+        <div class="grid md:grid-cols-3 gap-8">
+          <div class="neomorphic-card p-8 relative">
+            <div class="text-center">
+              <h3 class="text-2xl font-bold text-white mb-4">Free</h3>
+              <div class="text-4xl font-bold text-gradient mb-2">$0</div>
+              <p class="text-gray-300 mb-6">1,000 requests/month</p>
+              <ul class="space-y-3 mb-8">
+                <li class="flex items-center text-gray-300">
+                  <svg class="w-5 h-5 text-green-400 mr-3 icon" viewBox="0 0 24 24">
+                    <polyline points="20,6 9,17 4,12" stroke="currentColor" stroke-width="2" fill="none"/>
+                  </svg>
+                  Real-time quotes
+                </li>
+                <li class="flex items-center text-gray-300">
+                  <svg class="w-5 h-5 text-green-400 mr-3 icon" viewBox="0 0 24 24">
+                    <polyline points="20,6 9,17 4,12" stroke="currentColor" stroke-width="2" fill="none"/>
+                  </svg>
+                  Basic support
+                </li>
+                <li class="flex items-center text-gray-300">
+                  <svg class="w-5 h-5 text-green-400 mr-3 icon" viewBox="0 0 24 24">
+                    <polyline points="20,6 9,17 4,12" stroke="currentColor" stroke-width="2" fill="none"/>
+                  </svg>
+                  Rate limited
+                </li>
+              </ul>
+              <a href="{% url 'index' %}">
+                <button class="w-full py-4 rounded-lg font-semibold neomorphic-button">
+                  Get Started
+                </button>
+              </a>
+            </div>
+          </div>
+
+          <div class="neomorphic-card p-8 relative glow">
+            <div class="absolute -top-4 left-1/2 transform -translate-x-1/2">
+              <div class="primary-button px-4 py-2 text-sm">Most Popular</div>
+            </div>
+            <div class="text-center">
+              <h3 class="text-2xl font-bold text-white mb-4">Pro</h3>
+              <div class="text-4xl font-bold text-gradient mb-2">$49</div>
+              <p class="text-gray-300 mb-6">100,000 requests/month</p>
+              <ul class="space-y-3 mb-8">
+                <li class="flex items-center text-gray-300">
+                  <svg class="w-5 h-5 text-green-400 mr-3 icon" viewBox="0 0 24 24">
+                    <polyline points="20,6 9,17 4,12" stroke="currentColor" stroke-width="2" fill="none"/>
+                  </svg>
+                  All APIs
+                </li>
+                <li class="flex items-center text-gray-300">
+                  <svg class="w-5 h-5 text-green-400 mr-3 icon" viewBox="0 0 24 24">
+                    <polyline points="20,6 9,17 4,12" stroke="currentColor" stroke-width="2" fill="none"/>
+                  </svg>
+                  Priority support
+                </li>
+                <li class="flex items-center text-gray-300">
+                  <svg class="w-5 h-5 text-green-400 mr-3 icon" viewBox="0 0 24 24">
+                    <polyline points="20,6 9,17 4,12" stroke="currentColor" stroke-width="2" fill="none"/>
+                  </svg>
+                  99.9% uptime
+                </li>
+                <li class="flex items-center text-gray-300">
+                  <svg class="w-5 h-5 text-green-400 mr-3 icon" viewBox="0 0 24 24">
+                    <polyline points="20,6 9,17 4,12" stroke="currentColor" stroke-width="2" fill="none"/>
+                  </svg>
+                  Advanced features
+                </li>
+              </ul>
+              <a href="{% url 'index' %}">
+                <button class="w-full py-4 rounded-lg font-semibold primary-button">
+                  Get Started
+                </button>
+              </a>
+            </div>
+          </div>
+
+          <div class="neomorphic-card p-8 relative">
+            <div class="text-center">
+              <h3 class="text-2xl font-bold text-white mb-4">Enterprise</h3>
+              <div class="text-4xl font-bold text-gradient mb-2">Custom</div>
+              <p class="text-gray-300 mb-6">Unlimited requests</p>
+              <ul class="space-y-3 mb-8">
+                <li class="flex items-center text-gray-300">
+                  <svg class="w-5 h-5 text-green-400 mr-3 icon" viewBox="0 0 24 24">
+                    <polyline points="20,6 9,17 4,12" stroke="currentColor" stroke-width="2" fill="none"/>
+                  </svg>
+                  Custom integration
+                </li>
+                <li class="flex items-center text-gray-300">
+                  <svg class="w-5 h-5 text-green-400 mr-3 icon" viewBox="0 0 24 24">
+                    <polyline points="20,6 9,17 4,12" stroke="currentColor" stroke-width="2" fill="none"/>
+                  </svg>
+                  Dedicated support
+                </li>
+                <li class="flex items-center text-gray-300">
+                  <svg class="w-5 h-5 text-green-400 mr-3 icon" viewBox="0 0 24 24">
+                    <polyline points="20,6 9,17 4,12" stroke="currentColor" stroke-width="2" fill="none"/>
+                  </svg>
+                  SLA guarantee
+                </li>
+                <li class="flex items-center text-gray-300">
+                  <svg class="w-5 h-5 text-green-400 mr-3 icon" viewBox="0 0 24 24">
+                    <polyline points="20,6 9,17 4,12" stroke="currentColor" stroke-width="2" fill="none"/>
+                  </svg>
+                  On-premise option
+                </li>
+              </ul>
+              <button class="w-full py-4 rounded-lg font-semibold neomorphic-button">
+                Contact Sales
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- Testimonials -->
+    <section class="px-4 py-16 md:px-8">
+      <div class="max-w-6xl mx-auto">
+        <h2 class="text-3xl md:text-5xl font-bold text-center mb-16 text-white">
+          What <span class="text-gradient">Developers</span> Say
+        </h2>
+        <div class="grid md:grid-cols-2 gap-8">
+          <div class="neomorphic-card p-8">
+            <div class="flex mb-4">
+              <svg class="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 24 24">
+                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" fill="currentColor"/>
+              </svg>
+              <svg class="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 24 24">
+                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" fill="currentColor"/>
+              </svg>
+              <svg class="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 24 24">
+                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" fill="currentColor"/>
+              </svg>
+              <svg class="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 24 24">
+                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" fill="currentColor"/>
+              </svg>
+              <svg class="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 24 24">
+                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" fill="currentColor"/>
+              </svg>
+            </div>
+            <p class="text-gray-300 text-lg mb-6">"StockAPI transformed our trading platform. The real-time data is incredibly reliable."</p>
+            <div>
+              <p class="text-white font-semibold">Sarah Chen</p>
+              <p class="text-gray-400">Lead Developer at TradeTech</p>
+            </div>
+          </div>
+
+          <div class="neomorphic-card p-8">
+            <div class="flex mb-4">
+              <svg class="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 24 24">
+                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" fill="currentColor"/>
+              </svg>
+              <svg class="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 24 24">
+                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" fill="currentColor"/>
+              </svg>
+              <svg class="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 24 24">
+                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" fill="currentColor"/>
+              </svg>
+              <svg class="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 24 24">
+                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" fill="currentColor"/>
+              </svg>
+              <svg class="w-5 h-5 text-yellow-400 fill-current" viewBox="0 0 24 24">
+                <polygon points="12,2 15.09,8.26 22,9.27 17,14.14 18.18,21.02 12,17.77 5.82,21.02 7,14.14 2,9.27 8.91,8.26" fill="currentColor"/>
+              </svg>
+            </div>
+            <p class="text-gray-300 text-lg mb-6">"Best financial API we've used. Documentation is clear and support is exceptional."</p>
+            <div>
+              <p class="text-white font-semibold">Marcus Rodriguez</p>
+              <p class="text-gray-400">CTO at InvestApp</p>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- FAQ -->
+    <section class="px-4 py-16 md:px-8">
+      <div class="max-w-4xl mx-auto">
+        <h2 class="text-3xl md:text-5xl font-bold text-center mb-16 text-white">
+          Frequently Asked <span class="text-gradient">Questions</span>
+        </h2>
+        <div class="space-y-4">
+          <div class="neomorphic-card overflow-hidden">
+            <button class="w-full p-6 text-left flex justify-between items-center focus:outline-none accordion-trigger" onclick="toggleAccordion(0)">
+              <h3 class="text-lg font-semibold text-white">How accurate is your real-time data?</h3>
+              <svg class="w-5 h-5 text-gray-400 transition-transform chevron" viewBox="0 0 24 24">
+                <polyline points="6,9 12,15 18,9" stroke="currentColor" stroke-width="2" fill="none"/>
+              </svg>
+            </button>
+            <div class="accordion-content">
+              <div class="neomorphic-inset mx-6 mb-6 p-4 rounded-lg">
+                <p class="text-gray-300">Our data is sourced directly from major exchanges with sub-second latency. We maintain 99.9% accuracy with real-time validation.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="neomorphic-card overflow-hidden">
+            <button class="w-full p-6 text-left flex justify-between items-center focus:outline-none accordion-trigger" onclick="toggleAccordion(1)">
+              <h3 class="text-lg font-semibold text-white">What's included in the free plan?</h3>
+              <svg class="w-5 h-5 text-gray-400 transition-transform chevron" viewBox="0 0 24 24">
+                <polyline points="6,9 12,15 18,9" stroke="currentColor" stroke-width="2" fill="none"/>
+              </svg>
+            </button>
+            <div class="accordion-content">
+              <div class="neomorphic-inset mx-6 mb-6 p-4 rounded-lg">
+                <p class="text-gray-300">The free plan includes 1,000 API requests per month with access to real-time quotes and basic historical data.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="neomorphic-card overflow-hidden">
+            <button class="w-full p-6 text-left flex justify-between items-center focus:outline-none accordion-trigger" onclick="toggleAccordion(2)">
+              <h3 class="text-lg font-semibold text-white">Can I upgrade or downgrade my plan anytime?</h3>
+              <svg class="w-5 h-5 text-gray-400 transition-transform chevron" viewBox="0 0 24 24">
+                <polyline points="6,9 12,15 18,9" stroke="currentColor" stroke-width="2" fill="none"/>
+              </svg>
+            </button>
+            <div class="accordion-content">
+              <div class="neomorphic-inset mx-6 mb-6 p-4 rounded-lg">
+                <p class="text-gray-300">Yes, you can change your plan at any time. Changes take effect immediately with prorated billing.</p>
+              </div>
+            </div>
+          </div>
+
+          <div class="neomorphic-card overflow-hidden">
+            <button class="w-full p-6 text-left flex justify-between items-center focus:outline-none accordion-trigger" onclick="toggleAccordion(3)">
+              <h3 class="text-lg font-semibold text-white">Do you offer support for custom integrations?</h3>
+              <svg class="w-5 h-5 text-gray-400 transition-transform chevron" viewBox="0 0 24 24">
+                <polyline points="6,9 12,15 18,9" stroke="currentColor" stroke-width="2" fill="none"/>
+              </svg>
+            </button>
+            <div class="accordion-content">
+              <div class="neomorphic-inset mx-6 mb-6 p-4 rounded-lg">
+                <p class="text-gray-300">Our Enterprise plan includes dedicated support for custom integrations and on-premise deployments.</p>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <div class="section-divider"></div>
+
+    <!-- CTA Section -->
+    <section class="px-4 py-16 md:px-8">
+      <div class="max-w-4xl mx-auto text-center">
+        <div class="neomorphic-card p-12">
+          <h2 class="text-3xl md:text-5xl font-bold text-white mb-6">
+            Ready to Start <span class="text-gradient">Building</span>?
+          </h2>
+          <p class="text-xl text-gray-300 mb-8">
+            Join thousands of developers using StockAPI to power their financial applications.
+          </p>
+          <div class="flex flex-col sm:flex-row gap-4 justify-center">
+            <button class="primary-button px-8 py-4 text-lg glow">
+              Start Free Trial
+              <svg class="w-5 h-5 ml-2 inline icon" viewBox="0 0 24 24">
+                <line x1="5" y1="12" x2="19" y2="12" stroke="currentColor" stroke-width="2"/>
+                <polyline points="12,5 19,12 12,19" stroke="currentColor" stroke-width="2" fill="none"/>
+              </svg>
+            </button>
+            <button class="neomorphic-button px-8 py-4 text-lg">
+              Schedule Demo
+            </button>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="px-4 py-16 md:px-8">
+      <div class="max-w-6xl mx-auto">
+        <div class="neomorphic-card p-12">
+          <div class="grid md:grid-cols-4 gap-8 mb-8">
+            <div>
+              <div class="flex items-center space-x-2 mb-6">
+                <div class="neomorphic-inset p-2 rounded-lg">
+                  <svg class="w-6 h-6 text-gradient icon" viewBox="0 0 24 24">
+                    <path d="M3 3v18h18" stroke="currentColor" stroke-width="2" fill="none"/>
+                    <path d="m19 9-5 5-4-4-3 3" stroke="currentColor" stroke-width="2" fill="none"/>
+                  </svg>
+                </div>
+                <span class="text-xl font-bold text-white">StockAPI</span>
+              </div>
+              <p class="text-gray-300">
+                Professional financial data APIs for developers and businesses.
+              </p>
+            </div>
+            <div>
+              <h3 class="font-semibold text-white mb-4">Product</h3>
+              <ul class="space-y-2 text-gray-300">
+                <li><a href="#" class="hover:text-white transition-colors">APIs</a></li>
+                <li><a href="#" class="hover:text-white transition-colors">Documentation</a></li>
+                <li><a href="#" class="hover:text-white transition-colors">Pricing</a></li>
+                <li><a href="#" class="hover:text-white transition-colors">Status</a></li>
+              </ul>
+            </div>
+            <div>
+              <h3 class="font-semibold text-white mb-4">Company</h3>
+              <ul class="space-y-2 text-gray-300">
+                <li><a href="#" class="hover:text-white transition-colors">About</a></li>
+                <li><a href="#" class="hover:text-white transition-colors">Blog</a></li>
+                <li><a href="#" class="hover:text-white transition-colors">Careers</a></li>
+                <li><a href="#" class="hover:text-white transition-colors">Contact</a></li>
+              </ul>
+            </div>
+            <div>
+              <h3 class="font-semibold text-white mb-4">Legal</h3>
+              <ul class="space-y-2 text-gray-300">
+                <li><a href="#" class="hover:text-white transition-colors">Privacy</a></li>
+                <li><a href="#" class="hover:text-white transition-colors">Terms</a></li>
+                <li><a href="#" class="hover:text-white transition-colors">Security</a></li>
+              </ul>
+            </div>
+          </div>
+          <div class="section-divider my-8"></div>
+          <div class="flex flex-col md:flex-row justify-between items-center">
+            <p class="text-gray-400">© 2024 StockAPI. All rights reserved.</p>
+            <div class="flex items-center space-x-4 mt-4 md:mt-0">
+              <svg class="w-5 h-5 text-gray-400 icon" viewBox="0 0 24 24">
+                <circle cx="12" cy="12" r="10" stroke="currentColor" stroke-width="2" fill="none"/>
+                <line x1="2" y1="12" x2="22" y2="12" stroke="currentColor" stroke-width="2"/>
+                <path d="M12 2a15.3 15.3 0 0 1 4 10 15.3 15.3 0 0 1-4 10 15.3 15.3 0 0 1-4-10 15.3 15.3 0 0 1 4-10z" stroke="currentColor" stroke-width="2" fill="none"/>
+              </svg>
+              <span class="text-gray-400">99.9% Uptime</span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </footer>
+  </div>
+
+  <script>
+    let activeAccordion = null;
+
+    function toggleAccordion(index) {
+      const accordions = document.querySelectorAll('.accordion-content');
+      const chevrons = document.querySelectorAll('.chevron');
+      
+      if (activeAccordion === index) {
+        // Close current accordion
+        accordions[index].classList.remove('active');
+        chevrons[index].style.transform = 'rotate(0deg)';
+        activeAccordion = null;
+      } else {
+        // Close all accordions first
+        accordions.forEach((accordion, i) => {
+          accordion.classList.remove('active');
+          chevrons[i].style.transform = 'rotate(0deg)';
+        });
+        
+        // Open selected accordion
+        accordions[index].classList.add('active');
+        chevrons[index].style.transform = 'rotate(180deg)';
+        activeAccordion = index;
+      }
+    }
+  </script>
+</body>
+</html>
