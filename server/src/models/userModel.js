@@ -41,7 +41,7 @@ const userSchema = new Schema(
     aadhaar: {
       type: String,
       unique: true,
-      sparse: true, // Aadhaar optional, but must be unique if provided
+      sparse: true,
     },
     address: {
       type: String,
@@ -74,9 +74,13 @@ const userSchema = new Schema(
       enum: ['user', 'admin'],
       default: 'user',
     },
+    tickers: {
+      type: [String],
+      default: [],
+    },
   },
   {
-    timestamps: true, 
+    timestamps: true,
   }
 );
 

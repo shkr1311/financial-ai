@@ -1,6 +1,6 @@
 'use client';
 
-import React, { useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import { Eye, EyeOff, BarChart3, Router } from 'lucide-react';
 import useAuthStore from '@/store/useAuthStore'; // 👈 import your zustand store
 import { useRouter } from 'next/navigation';
@@ -53,7 +53,7 @@ const RegistrationForm = () => {
   const [errors, setErrors] = useState<RegistrationFormErrors>({});
 
   // ✅ get signUp + loading from zustand
-  const { signUp, loading } = useAuthStore();
+  const { signUp, loading, checkAuth, authUser } = useAuthStore();
 
   const handleChange = (
     e: React.ChangeEvent<
@@ -139,6 +139,15 @@ const RegistrationForm = () => {
     'w-full px-4 py-3 bg-slate-700/50 border border-slate-600/50 rounded-lg text-slate-200 placeholder-slate-400 focus:outline-none focus:ring-2 focus:ring-cyan-400 focus:border-transparent transition-all';
   const errorClass = 'text-red-400 text-sm mt-1';
 
+  useEffect(() => {
+      checkAuth()
+    }, [checkAuth])
+  
+    useEffect(() => {
+      console.log(authUser)
+      if (authUser) router.push('/')
+    }, [authUser])
+  
   return (
     <div className='min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center p-4'>
       <div className='w-full max-w-2xl bg-slate-800/60 backdrop-blur-sm rounded-2xl shadow-2xl border border-slate-700/50 p-8'>
@@ -398,20 +407,19 @@ const RegistrationForm = () => {
                 <option value='10-25'>₹10-25 Lakh</option>{' '}
                 <option value='above-25'>Above ₹25 Lakh</option>{' '}
               </select>{' '} */}
-              <label className="block text-slate-300 text-sm font-medium mb-2">
+              <label className='block text-slate-300 text-sm font-medium mb-2'>
                 Annual Income (Optional)
               </label>
               <input
-                type="number"
-                name="income"
+                type='number'
+                name='income'
                 value={formData.income}
                 onChange={(e) =>
                   setFormData({ ...formData, income: Number(e.target.value) })
                 }
                 className={inputClass}
-                placeholder="Enter your annual income"
+                placeholder='Enter your annual income'
               />
-
             </div>{' '}
           </div>{' '}
           {/* Password */}{' '}

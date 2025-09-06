@@ -1,7 +1,7 @@
 'use client';
 
 import type React from 'react';
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import { BarChart3, Eye, EyeOff, ArrowLeft } from 'lucide-react';
 import Link from 'next/link';
 import useAuthStore from '@/store/useAuthStore';
@@ -12,7 +12,7 @@ export default function SignInPage() {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
 
-  const { signIn, loading, isAuthenticated } = useAuthStore();
+  const { signIn, loading, authUser, checkAuth } = useAuthStore();
   const router = useRouter();
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -24,6 +24,15 @@ export default function SignInPage() {
       router.push('/'); 
     }
   };
+
+  useEffect(() => {
+    checkAuth()
+  }, [checkAuth])
+
+  useEffect(() => {
+    console.log(authUser)
+    if (authUser) router.push('/')
+  }, [authUser])
 
   return (
     <div className='min-h-screen bg-gradient-to-br from-slate-900 via-slate-800 to-slate-900 flex items-center justify-center px-4 sm:px-6 lg:px-8'>

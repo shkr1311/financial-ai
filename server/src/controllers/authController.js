@@ -187,19 +187,16 @@ const signUp = async (req, res) => {
 
 const check = async (req, res) => {
   try {
-    console.log(1);
     if (!req.user) {
       return res.status(401).json({ message: 'Not authenticated' });
     }
 
     // 🔍 Fetch the latest user data from DB (excluding password)
-    console.log(2);
     const user = await User.findById(req.user._id).select('-password');
     if (!user) {
       return res.status(404).json({ message: 'User not found' });
     }
 
-    console.log(3);
     return res.status(200).json({
       message: 'Authenticated user retrieved successfully',
       user,
