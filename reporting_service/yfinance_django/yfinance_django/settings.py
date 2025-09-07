@@ -26,7 +26,7 @@ SECRET_KEY = 'django-insecure-q7uzf9$d&6*qb+rwfhtstzcx3hzuwwgoko=qg!6-&imyob3z8b
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = False
 
-ALLOWED_HOSTS = ['https://financial-ai-apnn.vercel.app']
+ALLOWED_HOSTS = ["localhost", "127.0.0.1", ".onrender.com"]
 
 
 # Application definition
