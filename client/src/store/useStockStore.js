@@ -5,7 +5,8 @@ import { stockApi } from '@/lib/axios';
 
 const useStockStore = create((set) => ({
   stockData: null,
-  ratiosData: null, 
+  ratiosData: null,
+  news: null,
   popularMarketIndices: null,
   loading: false,
   error: null,
@@ -63,9 +64,7 @@ const useStockStore = create((set) => ({
     set({ loading: true, error: null });
 
     try {
-      const response = await stockApi.get(
-        `multiple-live-others/`
-      );
+      const response = await stockApi.get(`multiple-live-others/`);
       set({ popularMarketIndices: response.data, loading: false });
 
       return { data: response.data };
@@ -95,10 +94,10 @@ const useStockStore = create((set) => ({
   // ✅ Fetch Financial Ratios
   fetchFinancialRatios: async (ticker) => {
     set({ loading: true, error: null });
-    console.log('ticker', ticker)
+    console.log('ticker', ticker);
     try {
       const response = await stockApi.get(`ratios/${ticker}/`);
-      console.log('response', response.data)
+      console.log('response', response.data);
 
       // ✅ Expecting API response with categories: profitability, liquidity, leverage
       set({
@@ -127,6 +126,21 @@ const useStockStore = create((set) => ({
     } catch (error) {
       const message =
         error.response?.data?.error || 'Failed to fetch historical data.';
+      set({ loading: false, error: message });
+      toast.error(message);
+    }
+  },
+
+  fetchNews: async (tickers) => {
+    try {
+      set({ loading: false, error: null });
+      const response = await stockApi.get(
+        `multiple-news/${tickers.join(',')}/`
+      );
+      console.log('here');
+      set({ news: response.data, loading: false });
+    } catch (error) {
+      const message = error.response?.data?.error || 'Failed to fetch news.';
       set({ loading: false, error: message });
       toast.error(message);
     }

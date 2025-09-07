@@ -11,6 +11,7 @@ urlpatterns = [
     path('heatmap/<str:tickers>/', views.heatmap_view, name='heatmap'),
     path('top-gainers/<str:tickers>/', views.top_gainers_view, name='top_gainers'),
     path('top-losers/<str:tickers>/', views.top_losers_view, name='top_losers'),
+    path('multiple-news/<str:tickers>/', views.multiple_stock_news, name='mulitple_stock_news'),
     path('health/', views.api_health_check, name='api_health_check'),
 
     # Always keep this last
