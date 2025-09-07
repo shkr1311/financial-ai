@@ -1,3 +1,4 @@
+import pandas as pd
 from django.shortcuts import render
 import logging
 import yfinance as yf

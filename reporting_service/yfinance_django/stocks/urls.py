@@ -2,6 +2,7 @@ from . import views
 from django.urls import path
 
 urlpatterns = [
+    path("", views.index, name="index"),
     path("live/<str:ticker>/", views.live_price, name="live_price"),
     path("multiple-live/<str:tickers>/", views.multiple_live_prices, name="multiple_live_prices"),
     path("multiple-live-others/", views.multiple_live_prices_others, name="multiple_live_prices_others"),
