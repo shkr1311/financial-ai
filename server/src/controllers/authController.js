@@ -207,6 +207,63 @@ const check = async (req, res) => {
   }
 };
 
+const updateTickers = async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Not authenticated' });
+    }
+    
+    const { tickers } = req.body;
+    
+    if (!Array.isArray(tickers)) {
+      return res.status(400).json({ message: 'Tickers must be an array.' });
+    }
+    
+    const user = await User.findById(req.user._id).select('-password')
+    if (!user) {
+      return res.status(404).json({ message: 'User not found' });
+    }
+    
+    const updatedTickers = [
+      ...new Set([
+        ...user.tickers,
+        ...tickers.map((t) => t.trim().toUpperCase()),
+      ]),
+    ];
+    user.tickers = updatedTickers;
+    
+    await user.save();
+    
+    return res.status(200).json({
+      message: 'Tickers updated successfully.',
+      tickers: user.tickers,
+    });
+  } catch (error) {
+    console.error('Update Tickers Error:', error.message);
+    return res.status(500).json({ message: 'Internal Server Error!' });
+  }
+};
+
+const getTickers = async (req, res) => {
+  try {
+    if (!req.user) {
+      return res.status(401).json({ message: 'Not authenticated!' });
+    }
+
+    const user = await User.findById(req.user._id).select('-password');
+    if (!user) {
+      return res.status(404).json({ message: 'User not found!' });
+    }
+
+    return res
+      .status(200)
+      .json({ tickers: user.tickers, message: 'Tickers found!' });
+  } catch (error) {
+    console.error('Update Tickers Error:', error.message);
+    return res.status(500).json({ message: 'Internal Server Error!' });
+  }
+};
+
 const logout = async (req, res) => {
   try {
     res.cookie('jwt', '', {
@@ -227,5 +284,7 @@ module.exports = {
   signIn,
   signUp,
   check,
+  updateTickers,
+  getTickers,
   logout,
 };

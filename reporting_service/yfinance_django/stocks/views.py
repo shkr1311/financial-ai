@@ -1,8 +1,11 @@
 from django.shortcuts import render
+import logging
 import yfinance as yf
 from django.http import JsonResponse
 import json
 import re
+
+logger = logging.getLogger(__name__)
 
 def index(request):
   return render(request, 'index.html')
@@ -246,3 +249,157 @@ def financial_history(request, ticker):
   except Exception as e:
     return JsonResponse({"error": str(e)}, status=400)
 
+# @csrf_exempt
+# @require_http_methods(["GET"])
+def heatmap_view(request, tickers):
+    """
+    Returns correlation heatmap data (JSON format).
+    Example:
+    {
+      "AAPL": {"AAPL": 1.0, "MSFT": 0.89, ...},
+      "MSFT": {"AAPL": 0.89, "MSFT": 1.0, ...}
+    }
+    """
+    try:
+        logger.info(f"Heatmap request for tickers: {tickers}")
+        ticker_list = [t.strip().upper() for t in tickers.split(",")]
+        logger.info(f"Processed ticker list: {ticker_list}")
+        
+        # Download data with error handling
+        try:
+            df = yf.download(ticker_list, period="6mo", progress=False)["Adj Close"]
+            logger.info(f"Downloaded data shape: {df.shape}")
+        except Exception as download_error:
+            logger.error(f"Download error: {str(download_error)}")
+            return JsonResponse({"error": f"Failed to download data: {str(download_error)}"}, status=400)
+
+        if df.empty:
+            logger.warning("No data found for the given tickers")
+            return JsonResponse({"error": "No data found"}, status=404)
+        
+        # Handle single ticker case
+        if len(ticker_list) == 1:
+            return JsonResponse({ticker_list[0]: {ticker_list[0]: 1.0}}, safe=False)
+        
+        # Calculate correlation
+        try:
+            corr = df.corr().round(2).fillna(0)
+            logger.info(f"Correlation matrix shape: {corr.shape}")
+            
+            # Convert to dictionary
+            corr_dict = {}
+            for ticker1 in ticker_list:
+                if ticker1 in corr.index:
+                    corr_dict[ticker1] = {}
+                    for ticker2 in ticker_list:
+                        if ticker2 in corr.columns:
+                            corr_dict[ticker1][ticker2] = float(corr.loc[ticker1, ticker2])
+                        else:
+                            corr_dict[ticker1][ticker2] = 0.0
+                else:
+                    # If ticker not in correlation matrix, set default values
+                    corr_dict[ticker1] = {t: 1.0 if t == ticker1 else 0.0 for t in ticker_list}
+            
+            logger.info(f"Returning correlation data for {len(corr_dict)} tickers")
+            return JsonResponse(corr_dict, safe=False)
+            
+        except Exception as corr_error:
+            logger.error(f"Correlation calculation error: {str(corr_error)}")
+            return JsonResponse({"error": f"Correlation calculation failed: {str(corr_error)}"}, status=400)
+            
+    except Exception as e:
+        logger.error(f"General error in heatmap_view: {str(e)}")
+        return JsonResponse({"error": str(e)}, status=400)
+
+
+# @csrf_exempt
+# @require_http_methods(["GET"])
+def top_gainers_view(request, tickers):
+    """
+    Returns top 5 gainers from given tickers.
+    """
+    try:
+        logger.info(f"Top gainers request for tickers: {tickers}")
+        ticker_list = [t.strip().upper() for t in tickers.split(",")]
+        # "AAPL,MSFT" => ['AAPL', 'MSFT']
+        try:
+            df = yf.download(ticker_list, period="5d", progress=False)["Adj Close"]
+            logger.info(f"Downloaded data shape for gainers: {df.shape}")
+        except Exception as download_error:
+            logger.error(f"Download error for gainers: {str(download_error)}")
+            return JsonResponse({"error": f"Failed to download data: {str(download_error)}"}, status=400)
+
+        if df.empty:
+            return JsonResponse({"error": "No data found"}, status=404)
+
+        # Calculate percentage change from first to last day
+        try:
+            if len(df) < 2:
+                return JsonResponse({"error": "Not enough data for calculation"}, status=400)
+                
+            pct_change = ((df.iloc[-1] - df.iloc[0]) / df.iloc[0] * 100).fillna(0)
+            top_gainers = pct_change.sort_values(ascending=False).head(5)
+
+            result = [{"Ticker": str(t), "Change%": float(chg)} for t, chg in top_gainers.items()]
+            logger.info(f"Returning {len(result)} top gainers")
+            return JsonResponse(result, safe=False)
+            
+        except Exception as calc_error:
+            logger.error(f"Calculation error for gainers: {str(calc_error)}")
+            return JsonResponse({"error": f"Calculation failed: {str(calc_error)}"}, status=400)
+            
+    except Exception as e:
+        logger.error(f"General error in top_gainers_view: {str(e)}")
+        return JsonResponse({"error": str(e)}, status=400)
+
+
+# @csrf_exempt
+# @require_http_methods(["GET"])
+def top_losers_view(request, tickers):
+  """
+  Returns top 5 losers from given tickers.
+  """
+  try:
+      logger.info(f"Top losers request for tickers: {tickers}")
+      ticker_list = [t.strip().upper() for t in tickers.split(",")]
+      
+      try:
+          df = yf.download(ticker_list, period="5d", progress=False)["Adj Close"]
+          logger.info(f"Downloaded data shape for losers: {df.shape}")
+      except Exception as download_error:
+          logger.error(f"Download error for losers: {str(download_error)}")
+          return JsonResponse({"error": f"Failed to download data: {str(download_error)}"}, status=400)
+
+      if df.empty:
+          return JsonResponse({"error": "No data found"}, status=404)
+
+      try:
+          if len(df) < 2:
+              return JsonResponse({"error": "Not enough data for calculation"}, status=400)
+              
+          pct_change = ((df.iloc[-1] - df.iloc[0]) / df.iloc[0] * 100).fillna(0)
+          top_losers = pct_change.sort_values(ascending=True).head(5)
+
+          result = [{"Ticker": str(t), "Change%": float(chg)} for t, chg in top_losers.items()]
+          logger.info(f"Returning {len(result)} top losers")
+          return JsonResponse(result, safe=False)
+          
+      except Exception as calc_error:
+          logger.error(f"Calculation error for losers: {str(calc_error)}")
+          return JsonResponse({"error": f"Calculation failed: {str(calc_error)}"}, status=400)
+          
+  except Exception as e:
+      logger.error(f"General error in top_losers_view: {str(e)}")
+      return JsonResponse({"error": str(e)}, status=400)
+
+
+# Test endpoint to check if API is working
+# @csrf_exempt
+# @require_http_methods(["GET"])
+def api_health_check(request):
+  """Simple health check endpoint"""
+  return JsonResponse({
+    "status": "ok",
+    "message": "API is working",
+    "timestamp": pd.Timestamp.now().isoformat()
+  })

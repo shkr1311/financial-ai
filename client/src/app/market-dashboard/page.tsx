@@ -22,39 +22,17 @@ import {
 } from 'lucide-react';
 import Link from 'next/link';
 import useStockStore from '@/store/useStockStore';
+import FloatingTickerInput from '@/components/FloatingTickerInput/FloatingTickerInput';
+import useAuthStore from '@/store/useAuthStore';
 
 export default function MarketDashboard() {
   const { fetchMultipleLiveStocks, stockData, error, loading } =
     useStockStore();
+  const { checkAuth, authUser } = useAuthStore();
   // const {fetchMultipleLiveStocks, error, loading} = useStockStore()
 
   const [selectedTimeframe, setSelectedTimeframe] = useState('1D');
   const [hoveredSector, setHoveredSector] = useState<string | null>(null);
-
-  const [open, setOpen] = useState(false);
-  const [tickers, setTickers] = useState<string[]>([]);
-  const [input, setInput] = useState('');
-  const [submitted, setSubmitted] = useState(false);
-
-  const handleAddTicker = () => {
-    if (input.trim() && !tickers.includes(input.toUpperCase())) {
-      setTickers([...tickers, input.toUpperCase()]);
-      setInput('');
-    }
-  };
-
-  const handleRemoveTicker = (ticker: string) => {
-    setTickers(tickers.filter((t) => t !== ticker));
-  };
-
-  const handleSubmit = () => {
-    console.log('Selected Tickers:', tickers);
-    setSubmitted(true);
-    setTimeout(() => {
-      setSubmitted(false);
-      setOpen(false);
-    }, 1000); // show tick for 1s
-  };
 
   const marketIndices = [
     {
@@ -209,22 +187,22 @@ export default function MarketDashboard() {
   useEffect(() => {
     const testLiveData = async () => {
       // await fetchLiveStockData('AAPL');
-      await fetchMultipleLiveStocks([
-        'AAPL',
-        '^NSEI',
-        'GLD',
-        'CL=F',
-        'USDINR=X',
-      ]);
+      if (authUser != null) {
+        await fetchMultipleLiveStocks(authUser.tickers);
+      }
       console.log('Live Stock Data:', stockData);
     };
 
     testLiveData();
-  }, []);
+  }, [authUser]);
 
   useEffect(() => {
     console.log('stockData', stockData);
   }, [stockData]);
+
+  useEffect(() => {
+    checkAuth();
+  }, []);
 
   return (
     <div className='min-h-screen bg-background'>
@@ -263,58 +241,35 @@ export default function MarketDashboard() {
             Live Market Indices
           </h2>
           <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4'>
-            {!stockData &&
-              marketIndices.map((index) => (
-                <Card
-                  key={index.name}
-                  className='glass p-4 hover:scale-105 transition-all duration-300'
-                >
-                  <div className='flex items-center justify-between mb-2'>
-                    <h3 className='font-medium text-foreground text-sm'>
-                      {index.name}
-                    </h3>
-                    {index.positive ? (
-                      <TrendingUp className='w-4 h-4 text-financial-teal' />
-                    ) : (
-                      <TrendingDown className='w-4 h-4 text-financial-coral' />
-                    )}
-                  </div>
-                  <div className='space-y-1'>
-                    <p className='font-bold text-lg text-foreground'>
-                      {index.value}
-                    </p>
-                    <div className='flex items-center space-x-2 text-sm'>
-                      <span
-                        className={
-                          index.positive
-                            ? 'text-financial-teal'
-                            : 'text-financial-coral'
-                        }
-                      >
-                        {index.change}
-                      </span>
-                      <span
-                        className={
-                          index.positive
-                            ? 'text-financial-teal'
-                            : 'text-financial-coral'
-                        }
-                      >
-                        {index.percent}
-                      </span>
-                    </div>
-                  </div>
-                </Card>
-              ))}
-            {stockData &&
+            {loading ? (
+              <div className='flex items-center justify-center col-span-full h-64'>
+                <div className='flex flex-col items-center justify-center p-6 border border-border rounded-2xl glass shadow-sm'>
+                  <Loader className='size-10 animate-spin text-financial-teal mb-3' />
+                  <p className='text-muted-foreground'>
+                    Loading market data...
+                  </p>
+                </div>
+              </div>
+            ) : !stockData || Object.keys(stockData).length === 0 ? (
+              <div className='flex items-center justify-center col-span-full h-64'>
+                <div className='flex flex-col items-center justify-center p-6 border border-border rounded-2xl glass shadow-sm text-center'>
+                  <p className='text-muted-foreground'>
+                    You do not have any tickers added. <br />
+                    Please add them using the button at the bottom right corner
+                    of the page.
+                  </p>
+                </div>
+              </div>
+            ) : (
               Object.entries(stockData).map(([ticker, data]) => {
-                const summary = data.summary;
-                if (loading)
-                  return (
-                    <div className='flex items-center justify-center h-screen'>
-                      <Loader className='size-10 animate-spin' />
-                    </div>
-                  );
+                const { summary } = data as {
+                  summary: {
+                    value: string;
+                    change: string;
+                    percent: string;
+                    positive: boolean;
+                  };
+                };
                 return (
                   <Card
                     key={ticker}
@@ -357,7 +312,8 @@ export default function MarketDashboard() {
                     </div>
                   </Card>
                 );
-              })}
+              })
+            )}
           </div>
         </section>
 
@@ -604,75 +560,7 @@ export default function MarketDashboard() {
           </div>
         </section>
       </div>
-      {/* Floating Add Button */}
-      <Button
-        size='lg'
-        onClick={() => setOpen(!open)}
-        className='fixed bottom-6 right-6 w-16 h-16 rounded-2xl shadow-xl 
-                   bg-gradient-to-br from-financial-teal to-emerald-500 
-                   hover:scale-110 hover:shadow-2xl active:scale-95 
-                   transition-all duration-300 ease-out text-white flex 
-                   items-center justify-center z-50'
-      >
-        {submitted ? (
-          <Check className='w-8 h-8' />
-        ) : (
-          <Plus className='w-8 h-8' />
-        )}
-      </Button>
-
-      {/* Expandable Input Box */}
-      {open && (
-        <div className='fixed bottom-28 right-6 w-80 bg-background border border-border rounded-xl shadow-2xl p-4 z-40 animate-in fade-in slide-in-from-bottom-5 duration-300'>
-          <h3 className='font-semibold text-lg mb-3 text-foreground'>
-            Add Tickers
-          </h3>
-
-          {/* Input field with add button */}
-          <div className='flex space-x-2'>
-            <input
-              type='text'
-              value={input}
-              onChange={(e) => setInput(e.target.value)}
-              onKeyDown={(e) => e.key === 'Enter' && handleAddTicker()}
-              placeholder='Enter ticker symbol (e.g., AAPL)'
-              className='flex-1 rounded-md border border-border px-3 py-2 text-sm focus:outline-none focus:ring-2 focus:ring-financial-teal'
-            />
-            <Button
-              variant='secondary'
-              onClick={handleAddTicker}
-              className='shrink-0'
-            >
-              Select
-            </Button>
-          </div>
-
-          {/* Selected tickers */}
-          <div className='flex flex-wrap gap-2 mt-3'>
-            {tickers.map((ticker) => (
-              <div
-                key={ticker}
-                className='flex items-center bg-financial-teal/20 text-financial-teal px-3 py-1 rounded-full text-sm'
-              >
-                {ticker}
-                <X
-                  className='w-4 h-4 ml-2 cursor-pointer hover:text-financial-coral'
-                  onClick={() => handleRemoveTicker(ticker)}
-                />
-              </div>
-            ))}
-          </div>
-
-          {/* Submit button */}
-          <Button
-            className='mt-4 w-full bg-financial-teal hover:bg-financial-teal/90'
-            onClick={handleSubmit}
-            disabled={tickers.length === 0}
-          >
-            Submit
-          </Button>
-        </div>
-      )}
+      <FloatingTickerInput />
     </div>
   );
 }

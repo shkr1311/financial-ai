@@ -4,6 +4,8 @@ const {
   signUp,
   check,
   logout,
+  updateTickers,
+  getTickers
 } = require('../controllers/authController.js');
 const protect = require('../middlewares/protectRoute.js');
 const router = express.Router();
@@ -11,6 +13,10 @@ const router = express.Router();
 router.post('/sign-up', signUp);
 
 router.post('/sign-in', signIn);
+
+router.post('/update-ticker', protect, updateTickers)
+
+router.get('/get-tickers', protect, getTickers)
 
 router.post('/logout', logout);
 

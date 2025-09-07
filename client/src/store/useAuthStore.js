@@ -4,6 +4,7 @@ import toast from 'react-hot-toast';
 
 const useAuthStore = create((set) => ({
   authUser: null,
+  tickers: null,
   isAuthenticated: false,
   loading: false,
   error: null,
@@ -87,6 +88,56 @@ const useAuthStore = create((set) => ({
 
       toast.error(message);
       return { success: false, error: message };
+    }
+  },
+
+  updateTicker: async (tickers) => {
+    try {
+      const response = await axiosInstance.post('/auth/update-ticker', {
+        tickers,
+      });
+
+      set((state) => ({
+        authUser: {
+          ...state.authUser,
+          tickers: response.data.tickers,
+        },
+      }));
+
+      return { success: true, tickers: response.data.tickers };
+    } catch (error) {
+      const message =
+        error.response?.data?.message || 'Failed while updating tickers!';
+
+      set({
+        loading: false,
+        error: message,
+      });
+
+      toast.error(message);
+      return { success: false, error: message };
+    }
+  },
+
+  getTickers: async () => {
+    set({ loading: true, error: null });
+    try {
+      const response = await axiosInstance.get('/auth/get-tickers');
+      set((state) => ({
+        tickers: response.data.tickers,
+        authUser: state.authUser
+          ? { ...state.authUser }
+          : state.authUser,
+      }));
+      return { success: true, tickers: response.data.tickers };
+    } catch (error) {
+      const message =
+        error.response?.data?.message || 'Failed while fetching tickers!';
+      set({ error: message });
+      toast.error(message);
+      return { success: false, error: message };
+    } finally {
+      set({ loading: false });
     }
   },
 
