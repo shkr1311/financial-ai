@@ -98,7 +98,13 @@ export default function Page() {
   // ✅ get auth state from store
   const { authUser, isAuthenticated, checkAuth, isCheckingAuth, logout } =
     useAuthStore();
-  const { fetchLiveStockData, fetchRecentData, stockData, error, loading } = useStockStore();
+  const {
+    fetchMultipleLiveStocksOthers,
+    popularMarketIndices,
+    stockData,
+    error,
+    loading,
+  } = useStockStore();
 
   useEffect(() => {
     checkAuth(); // ✅ check auth on mount
@@ -114,16 +120,14 @@ export default function Page() {
   useEffect(() => {
     const testLiveData = async () => {
       // await fetchLiveStockData('AAPL');
-      await fetchRecentData('AAPL');
+      if (authUser != null) {
+        await fetchMultipleLiveStocksOthers(authUser.tickers);
+      }
+      console.log('Live Stock Data:', popularMarketIndices);
     };
 
     testLiveData();
-  }, []);
-
-  useEffect(() => {
-    console.log('Live Stock Data:', stockData);
-  }, [stockData])
-
+  }, [authUser]);
 
   const handleFeatureClick = (feature: (typeof features)[0]) => {
     if (feature.available) {
@@ -238,24 +242,55 @@ export default function Page() {
       <div className='fixed top-16 w-full z-40 bg-slate-800/90 backdrop-blur-sm border-b border-slate-700/50 overflow-hidden'>
         <div className='ticker-scroll py-2'>
           <div className='flex items-center space-x-8 text-sm'>
-            {tickerData.map((item, index) => (
-              <div
-                key={index}
-                className='flex items-center space-x-2 whitespace-nowrap'
-              >
-                <span className='text-slate-300 font-medium'>
-                  {item.symbol}
-                </span>
-                <span className='text-white font-semibold'>{item.price}</span>
-                <span
-                  className={`font-medium ${
-                    item.positive ? 'text-teal-400' : 'text-red-400'
-                  }`}
+            {!popularMarketIndices &&
+              tickerData.map((item, index) => (
+                <div
+                  key={index}
+                  className='flex items-center space-x-2 whitespace-nowrap'
                 >
-                  {item.change}
-                </span>
-              </div>
-            ))}
+                  <span className='text-slate-300 font-medium'>
+                    {item.symbol}
+                  </span>
+                  <span className='text-white font-semibold'>{item.price}</span>
+                  <span
+                    className={`font-medium ${
+                      item.positive ? 'text-teal-400' : 'text-red-400'
+                    }`}
+                  >
+                    {item.change}
+                  </span>
+                </div>
+              ))}
+            {popularMarketIndices &&
+              Object.entries(popularMarketIndices).map(([ticker, data]) => {
+                const { summary } = data as {
+                  summary: {
+                    value: string;
+                    change: string;
+                    percent: string;
+                    positive: boolean;
+                  };
+                };
+                if (!summary) return null;
+                return (
+                  <div
+                    key={ticker}
+                    className='flex items-center space-x-2 whitespace-nowrap'
+                  >
+                    <span className='text-slate-300 font-medium'>{ticker}</span>
+                    <span className='text-white font-semibold'>
+                      {summary.value}
+                    </span>
+                    <span
+                      className={`font-medium ${
+                        summary.positive ? 'text-teal-400' : 'text-red-400'
+                      }`}
+                    >
+                      {summary.percent}
+                    </span>
+                  </div>
+                );
+              })}
           </div>
         </div>
       </div>

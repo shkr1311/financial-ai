@@ -64,7 +64,7 @@ const useStockStore = create((set) => ({
 
     try {
       const response = await stockApi.get(
-        `multiple-live/${['^NSEI'].join(',')}/`
+        `multiple-live-others/`
       );
       set({ popularMarketIndices: response.data, loading: false });
 

@@ -68,6 +68,27 @@ def multiple_live_prices(request, tickers):
   except Exception as e:
     return JsonResponse({"error": str(e)}, status=400)
 
+def multiple_live_prices_others(request):
+  try:
+    tickers = ['^NSEI', 'USDINR=X', 'TCS.NS', 'GLD', 'NVDA']
+    ticker_list = [t.strip().upper() for t in tickers]
+    data = yf.download(ticker_list, period="1d", interval="1m", group_by="ticker")
+    print(f"Downloaded data: {data}")
+
+    results = {}
+    for ticker in ticker_list:
+      try:
+        latest = data[ticker].dropna().tail(1).reset_index().to_dict(orient="records")[0]
+        results[ticker] = {
+          "raw": latest,
+          "summary": format_stock_summary(latest)
+        }
+      except Exception:
+        results[ticker] = {"error": "No data found"}
+    return JsonResponse(results, safe=False)
+  except Exception as e:
+    return JsonResponse({"error": str(e)}, status=400)
+
 def extract_founding_year(text):
   match = re.search(r'\b(?:founded|incorporated)\s+in\s+(\d{4})', text, re.IGNORECASE)
   if match:

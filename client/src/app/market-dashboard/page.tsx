@@ -26,8 +26,14 @@ import FloatingTickerInput from '@/components/FloatingTickerInput/FloatingTicker
 import useAuthStore from '@/store/useAuthStore';
 
 export default function MarketDashboard() {
-  const { fetchMultipleLiveStocks, stockData, error, loading } =
-    useStockStore();
+  const {
+    fetchMultipleLiveStocks,
+    fetchMultipleLiveStocksOthers,
+    popularMarketIndices,
+    stockData,
+    error,
+    loading,
+  } = useStockStore();
   const { checkAuth, authUser } = useAuthStore();
   // const {fetchMultipleLiveStocks, error, loading} = useStockStore()
 
@@ -189,8 +195,10 @@ export default function MarketDashboard() {
       // await fetchLiveStockData('AAPL');
       if (authUser != null) {
         await fetchMultipleLiveStocks(authUser.tickers);
+        await fetchMultipleLiveStocksOthers(authUser.tickers);
       }
       console.log('Live Stock Data:', stockData);
+      console.log('Live Stock Data:', popularMarketIndices);
     };
 
     testLiveData();
@@ -199,6 +207,10 @@ export default function MarketDashboard() {
   useEffect(() => {
     console.log('stockData', stockData);
   }, [stockData]);
+
+  useEffect(() => {
+    console.log('popularMarketIndices', popularMarketIndices);
+  }, [popularMarketIndices]);
 
   useEffect(() => {
     checkAuth();
@@ -270,6 +282,91 @@ export default function MarketDashboard() {
                     positive: boolean;
                   };
                 };
+                if (!summary) return null;
+                return (
+                  <Card
+                    key={ticker}
+                    className='glass p-4 hover:scale-105 transition-all duration-300'
+                  >
+                    <div className='flex items-center justify-between mb-2'>
+                      <h3 className='font-medium text-foreground text-sm'>
+                        {ticker}
+                      </h3>
+                      {summary.positive ? (
+                        <TrendingUp className='w-4 h-4 text-financial-teal' />
+                      ) : (
+                        <TrendingDown className='w-4 h-4 text-financial-coral' />
+                      )}
+                    </div>
+                    <div className='space-y-1'>
+                      <p className='font-bold text-lg text-foreground'>
+                        {summary.value}
+                      </p>
+                      <div className='flex items-center space-x-2 text-sm'>
+                        <span
+                          className={
+                            summary.positive
+                              ? 'text-financial-teal'
+                              : 'text-financial-coral'
+                          }
+                        >
+                          {summary.change}
+                        </span>
+                        <span
+                          className={
+                            summary.positive
+                              ? 'text-financial-teal'
+                              : 'text-financial-coral'
+                          }
+                        >
+                          {summary.percent}
+                        </span>
+                      </div>
+                    </div>
+                  </Card>
+                );
+              })
+            )}
+          </div>
+        </section>
+
+        {/* Popular Market Indices */}
+        <section>
+          <h2 className='font-display font-semibold text-2xl text-foreground mb-6'>
+            Popular Live Market Indices
+          </h2>
+          <div className='grid grid-cols-1 md:grid-cols-2 lg:grid-cols-5 gap-4'>
+            {loading ? (
+              <div className='flex items-center justify-center col-span-full h-64'>
+                <div className='flex flex-col items-center justify-center p-6 border border-border rounded-2xl glass shadow-sm'>
+                  <Loader className='size-10 animate-spin text-financial-teal mb-3' />
+                  <p className='text-muted-foreground'>
+                    Loading market data...
+                  </p>
+                </div>
+              </div>
+            ) : !popularMarketIndices ||
+              Object.keys(popularMarketIndices).length === 0 ? (
+              <div className='flex items-center justify-center col-span-full h-64'>
+                <div className='flex flex-col items-center justify-center p-6 border border-border rounded-2xl glass shadow-sm text-center'>
+                  <p className='text-muted-foreground'>
+                    You do not have any tickers added. <br />
+                    Please add them using the button at the bottom right corner
+                    of the page.
+                  </p>
+                </div>
+              </div>
+            ) : (
+              Object.entries(popularMarketIndices).map(([ticker, data]) => {
+                const { summary } = data as {
+                  summary: {
+                    value: string;
+                    change: string;
+                    percent: string;
+                    positive: boolean;
+                  };
+                };
+                if (!summary) return null;
                 return (
                   <Card
                     key={ticker}
