@@ -485,7 +485,9 @@ export default function CompanyFinancials() {
                                 </span>
                                 <div className='flex items-center'>
                                   <span className='font-medium text-foreground mr-2'>
-                                    {value !== null && value !== undefined ? String(value) : 'N/A'}
+                                    {value !== null && value !== undefined
+                                      ? String(value)
+                                      : 'N/A'}
                                   </span>
                                 </div>
                               </div>
@@ -512,7 +514,9 @@ export default function CompanyFinancials() {
                                 </span>
                                 <div className='flex items-center'>
                                   <span className='font-medium text-foreground mr-2'>
-                                    {value !== null && value !== undefined ? String(value) : 'N/A'}
+                                    {value !== null && value !== undefined
+                                      ? String(value)
+                                      : 'N/A'}
                                   </span>
                                 </div>
                               </div>
@@ -539,7 +543,9 @@ export default function CompanyFinancials() {
                                 </span>
                                 <div className='flex items-center'>
                                   <span className='font-medium text-foreground mr-2'>
-                                    {value !== null && value !== undefined ? String(value) : 'N/A'}
+                                    {value !== null && value !== undefined
+                                      ? String(value)
+                                      : 'N/A'}
                                   </span>
                                 </div>
                               </div>
