@@ -2,6 +2,7 @@
 import { create } from 'zustand';
 import toast from 'react-hot-toast';
 import { stockApi } from '@/lib/axios';
+import { showErrorToast } from '@/components/ToastComponent';
 
 const useStockStore = create((set) => ({
   stockData: null,
@@ -23,7 +24,10 @@ const useStockStore = create((set) => ({
       const message =
         error.response?.data?.error || 'Failed to fetch stock data.';
       set({ loading: false, error: message });
-      toast.error(message);
+      showErrorToast({
+        message: 'Error fetching stock data!',
+        message: message,
+      });
     }
   },
 
@@ -38,7 +42,10 @@ const useStockStore = create((set) => ({
       const message =
         error.response?.data?.error || 'Failed to fetch historical data.';
       set({ loading: false, error: message });
-      toast.error(message);
+      showErrorToast({
+        message: 'Error fetching historical data!',
+        description: message,
+      });
     }
   },
 
@@ -56,7 +63,10 @@ const useStockStore = create((set) => ({
       const message =
         error.response?.data?.error || 'Failed to fetch multiple stock data.';
       set({ loading: false, error: message });
-      toast.error(message);
+      showErrorToast({
+        message: 'Error fetching multiple stock data!',
+        description: message,
+      });
     }
   },
 
@@ -72,7 +82,10 @@ const useStockStore = create((set) => ({
       const message =
         error.response?.data?.error || 'Failed to fetch multiple stock data.';
       set({ loading: false, error: message });
-      toast.error(message);
+      showErrorToast({
+        message: 'Error fetching multiple stocks!',
+        description: message,
+      });
     }
   },
 
@@ -87,7 +100,10 @@ const useStockStore = create((set) => ({
         error.response?.data?.error ||
         'Failed to fetch the overview of stock summary.';
       set({ loading: false, error: message });
-      toast.error(message);
+      showErrorToast({
+        message: 'Error fetching overview!',
+        description: message,
+      });
     }
   },
 
@@ -113,7 +129,10 @@ const useStockStore = create((set) => ({
       const message =
         error.response?.data?.error || 'Failed to fetch the financial ratios.';
       set({ loading: false, error: message, ratiosData: null });
-      toast.error(message);
+      showErrorToast({
+        message: 'Error fetching financial ratios!',
+        description: message,
+      });
     }
   },
 
@@ -127,7 +146,10 @@ const useStockStore = create((set) => ({
       const message =
         error.response?.data?.error || 'Failed to fetch historical data.';
       set({ loading: false, error: message });
-      toast.error(message);
+      showErrorToast({
+        message: 'Error fetching historical data!',
+        description: message,
+      });
     }
   },
 
@@ -142,7 +164,7 @@ const useStockStore = create((set) => ({
     } catch (error) {
       const message = error.response?.data?.error || 'Failed to fetch news.';
       set({ loading: false, error: message });
-      toast.error(message);
+      showErrorToast({ message: 'Error fetching news!', description: message });
     }
   },
 

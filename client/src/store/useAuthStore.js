@@ -1,6 +1,7 @@
 import { create } from 'zustand';
 import { axiosInstance } from '../lib/axios';
 import toast from 'react-hot-toast';
+import { showErrorToast, showSuccessToast } from '@/components/ToastComponent';
 
 const useAuthStore = create((set) => ({
   authUser: null,
@@ -44,7 +45,7 @@ const useAuthStore = create((set) => ({
         loading: false,
       });
 
-      toast.success(response.data.message || 'Logged in successfully!');
+      showSuccessToast({message: response.data.message || 'Logged in successfully!'})
       return { success: true };
     } catch (error) {
       const message =
@@ -56,7 +57,7 @@ const useAuthStore = create((set) => ({
         isAuthenticated: false,
       });
 
-      toast.error(message);
+      showErrorToast({message: 'Error logging in!', description: message})
       return { success: false, error: message };
     }
   },
@@ -73,7 +74,7 @@ const useAuthStore = create((set) => ({
         loading: false,
       });
 
-      toast.success(response.data.message || 'User registered successfully!');
+      showSuccessToast({message: response.data.message || 'User registered successfully!'})
       return { success: true, message: response.data.message };
     } catch (error) {
       const message =
@@ -86,7 +87,7 @@ const useAuthStore = create((set) => ({
         isAuthenticated: false,
       });
 
-      toast.error(message);
+      showErrorToast({message: 'Error signing up!', description: message})
       return { success: false, error: message };
     }
   },
@@ -114,7 +115,7 @@ const useAuthStore = create((set) => ({
         error: message,
       });
 
-      toast.error(message);
+      showErrorToast({message: 'Error updating tickers!', description: message})
       return { success: false, error: message };
     }
   },
@@ -134,7 +135,7 @@ const useAuthStore = create((set) => ({
       const message =
         error.response?.data?.message || 'Failed while fetching tickers!';
       set({ error: message });
-      toast.error(message);
+      showErrorToast({message: 'Error fetching tickers!', description: message})
       return { success: false, error: message };
     } finally {
       set({ loading: false });
@@ -152,9 +153,10 @@ const useAuthStore = create((set) => ({
         error: null,
       });
 
-      toast.success('Logged out successfully!');
+      showSuccessToast({message: 'Logged out successfully!'})
     } catch (error) {
-      toast.error(error?.response?.data?.message || 'Error logging out!');
+      const message = error?.response?.data?.message || 'Failed to log out!'
+      showErrorToast({message: 'Error logging out!', description: message})
       console.log('ERROR: ', error);
     }
   },

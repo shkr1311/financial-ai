@@ -97,6 +97,7 @@
   * {
     @apply border-border outline-ring/50;
   }
+
   body {
     @apply bg-background text-foreground;
   }
@@ -124,6 +125,7 @@
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -139,6 +141,7 @@
   0% {
     transform: translateX(100%);
   }
+
   100% {
     transform: translateX(-100%);
   }
@@ -161,36 +164,47 @@
 .text-financial-teal {
   color: var(--financial-teal);
 }
+
 .text-financial-cyan {
   color: var(--financial-cyan);
 }
+
 .text-financial-coral {
   color: var(--financial-coral);
 }
+
 .text-financial-red {
   color: var(--financial-red);
 }
+
 .bg-financial-teal {
   background-color: var(--financial-teal);
 }
+
 .bg-financial-cyan {
   background-color: var(--financial-cyan);
 }
+
 .bg-financial-coral {
   background-color: var(--financial-coral);
 }
+
 .bg-financial-red {
   background-color: var(--financial-red);
 }
+
 .bg-financial-navy {
   background-color: var(--financial-navy);
 }
+
 .bg-financial-charcoal {
   background-color: var(--financial-charcoal);
 }
+
 .border-financial-teal {
   border-color: var(--financial-teal);
 }
+
 .border-financial-coral {
   border-color: var(--financial-coral);
 }
@@ -225,4 +239,33 @@
   .ticker-scroll {
     animation-duration: 20s;
   }
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+
+::-webkit-scrollbar-track {
+  background: var(--sidebar);
+  border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+  background: linear-gradient(180deg,
+      var(--financial-teal),
+      var(--financial-cyan));
+  border-radius: 10px;
+  border: 2px solid var(--sidebar);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: linear-gradient(180deg,
+      var(--financial-coral),
+      var(--financial-teal));
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--financial-teal) var(--sidebar);
 }
