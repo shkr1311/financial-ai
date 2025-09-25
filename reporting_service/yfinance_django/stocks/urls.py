@@ -13,6 +13,7 @@ urlpatterns = [
     path('top-gainers/<str:tickers>/', views.top_gainers_view, name='top_gainers'),
     path('top-losers/<str:tickers>/', views.top_losers_view, name='top_losers'),
     path('multiple-news/<str:tickers>/', views.multiple_stock_news, name='mulitple_stock_news'),
+    path('stock-info/<str:tickers>/', views.stock_basic_info, name='stock-info'),
     path('health/', views.api_health_check, name='api_health_check'),
 
     # Always keep this last

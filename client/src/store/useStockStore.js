@@ -9,11 +9,11 @@ const useStockStore = create((set) => ({
   ratiosData: null,
   news: null,
   popularMarketIndices: null,
+  stockInfo: null,
   loading: false,
   error: null,
   historicalData: [],
 
-  // ✅ Fetch live stock data
   fetchLiveStockData: async (ticker) => {
     set({ loading: true, error: null });
 
@@ -31,7 +31,6 @@ const useStockStore = create((set) => ({
     }
   },
 
-  // ✅ Fetch 5-day historical data
   fetchRecentData: async (ticker) => {
     set({ loading: true, error: null });
 
@@ -107,7 +106,6 @@ const useStockStore = create((set) => ({
     }
   },
 
-  // ✅ Fetch Financial Ratios
   fetchFinancialRatios: async (ticker) => {
     set({ loading: true, error: null });
     console.log('ticker', ticker);
@@ -168,7 +166,6 @@ const useStockStore = create((set) => ({
     }
   },
 
-  // ✅ Reset stock data
   resetStockData: () => {
     set({
       stockData: null,
@@ -176,6 +173,20 @@ const useStockStore = create((set) => ({
       error: null,
       loading: false,
     });
+  },
+
+  fetchStockInfo: async (tickers) => {
+    set({ loading: true, error: null });
+    try {
+      const response = await stockApi.get(`stock-info/${tickers.join(',')}/`);
+      set({ stockInfo: response.data });
+      console.log(response.data);
+      return { data: response.data };
+    } catch (error) {
+      console.log(error);
+    } finally {
+      set({ loading: false });
+    }
   },
 }));
 

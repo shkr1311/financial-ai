@@ -24,13 +24,16 @@ import Link from 'next/link';
 import useStockStore from '@/store/useStockStore';
 import FloatingTickerInput from '@/components/FloatingTickerInput/FloatingTickerInput';
 import useAuthStore from '@/store/useAuthStore';
+import InteractiveStockCharts from '@/components/InteractiveStockCharts';
 
 export default function MarketDashboard() {
   const {
     fetchMultipleLiveStocks,
     fetchMultipleLiveStocksOthers,
     popularMarketIndices,
+    fetchStockInfo,
     stockData,
+    stockInfo,
     error,
     loading,
   } = useStockStore();
@@ -196,6 +199,7 @@ export default function MarketDashboard() {
       if (authUser != null) {
         await fetchMultipleLiveStocks(authUser.tickers);
         await fetchMultipleLiveStocksOthers(authUser.tickers);
+        await fetchStockInfo(authUser.tickers);
       }
       console.log('Live Stock Data:', stockData);
       console.log('Live Stock Data:', popularMarketIndices);
@@ -211,6 +215,10 @@ export default function MarketDashboard() {
   useEffect(() => {
     console.log('popularMarketIndices', popularMarketIndices);
   }, [popularMarketIndices]);
+
+  useEffect(() => {
+    console.log('stockInfo', stockInfo);
+  }, [stockInfo]);
 
   useEffect(() => {
     checkAuth();
@@ -415,7 +423,7 @@ export default function MarketDashboard() {
         </section>
 
         {/* Interactive Chart Section */}
-        <section>
+        {/* <section>
           <div className='flex items-center justify-between mb-6'>
             <h2 className='font-display font-semibold text-2xl text-foreground'>
               Interactive Charts
@@ -453,6 +461,9 @@ export default function MarketDashboard() {
               </div>
             </div>
           </Card>
+        </section> */}
+        <section>
+          <InteractiveStockCharts stockInfo={stockInfo} stockData={stockData} />
         </section>
 
         {/* Sector Heatmap */}
@@ -661,3 +672,4 @@ export default function MarketDashboard() {
     </div>
   );
 }
+

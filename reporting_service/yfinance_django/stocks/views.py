@@ -416,3 +416,35 @@ def multiple_stock_news(request, tickers):
 
   except Exception as e:
     return JsonResponse({"error": str(e)}, status=400)
+
+def stock_basic_info(request, tickers):
+  try:
+    ticker_list = [t.strip().upper() for t in tickers.split(",")]
+    results = []
+
+    for ticker in ticker_list:
+      try:
+        stock = yf.Ticker(ticker)
+        info = stock.info
+
+        results.append({
+            "Ticker": ticker,
+            "LongBusinessSummary": info.get("longBusinessSummary"),
+            "Sector": info.get("sector"),
+            "FullTimeEmployees": info.get("fullTimeEmployees"),
+            "Website": info.get("website"),
+            "MarketCap": info.get("marketCap"),
+            "Beta": info.get("beta"),
+            "TrailingEPS": info.get("trailingEps"),
+            "TrailingPE": info.get("trailingPE"),
+        })
+      except Exception as inner_e:
+        results.append({
+            "Ticker": ticker,
+            "error": f"Failed to fetch info: {str(inner_e)}"
+        })
+
+    return JsonResponse(results, safe=False)
+
+  except Exception as e:
+    return JsonResponse({"error": str(e)}, status=400)
