@@ -20,7 +20,7 @@ app.use(
     // origin: 'https://financial-ai-rvju.vercel.app',
     // origin: 'http://localhost:3000',
     // origin: 'https://financial-ai-apnn.vercel.app',
-    origin: 'https://financial-ai-07.vercel.app/',
+    origin: 'https://financial-ai-07.vercel.app',
     credentials: true,
   })
 );
